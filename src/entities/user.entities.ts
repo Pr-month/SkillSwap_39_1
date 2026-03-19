@@ -1,9 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 
 import { Role } from 'src/common/enums/role.enum';
 import { Skill } from './skill.entity';
 import { Category } from './category.entity';
 import { Request } from './request.entity';
+import { Gender } from 'src/common/enums/gender.enum';
 
 @Entity('users')
 export class User {
@@ -28,8 +36,12 @@ export class User {
   @Column({ type: 'varchar', length: 100, nullable: true })
   city: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  gender: string;
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    nullable: true,
+  })
+  gender: Gender;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   avatar: string;
@@ -55,10 +67,15 @@ export class User {
   skills: Skill[];
 
   // Категории, которым пользователь хочет научиться
-  @OneToMany(() => Category, (category) => category.user, {
+  @ManyToMany(() => Category, {
     cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+  })
+  @JoinTable({
+    name: 'user_want_to_learn',
+    joinColumn: { name: 'userId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'categoryId', referencedColumnName: 'id' },
   })
   wantToLearn: Category[];
 

@@ -25,12 +25,6 @@ export class Skill {
   @Column('text', { array: true, nullable: true })
   images: string[];
 
-  @Column({ type: 'uuid', name: 'ownerId' })
-  ownerId: string;
-
-  @Column({ type: 'uuid', name: 'categoryId' })
-  categoryId: string;
-
   // Связи
 
   // Пользователь, создавший навык
@@ -42,7 +36,7 @@ export class Skill {
   owner: User;
 
   // Категория навыка
-  @ManyToOne(() => Category, (category) => category.skills, {
+  @ManyToOne(() => Category, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
