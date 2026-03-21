@@ -80,11 +80,7 @@ export class User {
   wantToLearn: Category[];
 
   // Навыки, добавленные в избранное
-  @OneToMany(() => Skill, (skill) => skill.favoritedBy, {
-    cascade: true,
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @ManyToMany(() => Skill, (skill) => skill.favoritedBy)
   favoriteSkills: Skill[];
 
   // Заявки, созданные пользователем

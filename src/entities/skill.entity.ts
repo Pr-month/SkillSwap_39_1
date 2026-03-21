@@ -43,10 +43,7 @@ export class Skill {
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
-  @ManyToMany(() => User, (user) => user.favoriteSkills, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @ManyToMany(() => User, (user) => user.favoriteSkills)
   @JoinTable({
     name: 'user_favorite_skills',
     joinColumn: { name: 'skillId', referencedColumnName: 'id' },
