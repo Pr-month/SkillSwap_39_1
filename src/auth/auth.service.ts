@@ -1,4 +1,8 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
@@ -48,6 +52,14 @@ export class AuthService {
     });
 
     return tokens;
+  }
+
+  async logout(userId: string) {
+    await this.usersRepository.update(userId, {
+      refreshToken: null,
+    });
+
+    return { message: 'Выход выполнен успешно' };
   }
 
   private async generateTokens(userId: string, email: string) {
