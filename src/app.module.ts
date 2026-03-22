@@ -9,7 +9,7 @@ import { dbConfig, IDBConfig } from './config/db.config';
 import { appConfig } from './config/app.config';
 
 @Module({
- imports: [
+  imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -20,7 +20,8 @@ import { appConfig } from './config/app.config';
       useFactory: (db: IDBConfig) => db,
     }),
     AuthModule,
-    UsersModule],
+    UsersModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
