@@ -13,6 +13,7 @@ import * as crypto from 'crypto';
 import { User } from 'src/entities/user.entities';
 import { jwtConfig } from 'src/config/jwt.config';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -47,6 +48,30 @@ export class AuthService {
 
     const tokens = await this.generateTokens(savedUser.id, savedUser.email);
     await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  async login(loginDto: LoginDto) {
+    const user = await this.usersRepository.findOne({
+      where: { email: loginDto.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Неверный email или пароль');
+    }
+
+    const isPasswordValid = await this.verifyData(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Неверный email или пароль');
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
