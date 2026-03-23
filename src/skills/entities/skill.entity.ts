@@ -7,8 +7,9 @@ import {
   JoinTable,
   JoinColumn,
 } from 'typeorm';
-import { User } from './user.entities';
-import { Category } from './category.entity';
+
+import { Category } from '../../categories/entities/category.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('skills')
 export class Skill {
