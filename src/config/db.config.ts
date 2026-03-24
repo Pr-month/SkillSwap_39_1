@@ -8,8 +8,8 @@ export const dbConfig = registerAs('DB_CONFIG',(): DataSourceOptions => ({
     username: process.env.DB_USERNAME || "postgres",
     password: process.env.DB_PASSWORD || "password",
     database: process.env.DB_DATABASE || "skillswap",
-    entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    synchronize: true,
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    synchronize:  process.env.NODE_ENV !== 'production',
   }),
 );
 
