@@ -4,8 +4,9 @@ import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdatePasswordDto } from "./dto/update-password.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { verifyPassword, hashPassword } from "./utils/password.util";
 import { User } from "./entities/user.entity";
+import { verifyPassword, hashPassword } from "./utils/password.util";
+
 
 @Injectable()
 export class UsersService {
@@ -19,8 +20,8 @@ export class UsersService {
     return 'Создание пользователя';
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<User[]> {
+    return await this.usersRepository.find();
   }
 
   async findOne(id: number) {
