@@ -12,11 +12,20 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { AccessAuthGuard } from './guards/access-auth.guard';
+import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
-interface AuthenticatedRequest extends Request {
+interface AccessRequest extends Request {
   user: {
     sub: string;
     email: string;
+  };
+}
+
+interface RefreshRequest extends Request {
+  user: {
+    sub: string;
+    email: string;
+    refreshToken: string;
   };
 }
 
@@ -32,7 +41,18 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AccessAuthGuard)
   @Post('logout')
-  logout(@Req() req: AuthenticatedRequest) {
+  logout(@Req() req: AccessRequest) {
     return this.authService.logout(req.user.sub);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(RefreshAuthGuard)
+  @Post('refresh')
+  refresh(@Req() req: RefreshRequest) {
+    return this.authService.refreshTokens(
+      req.user.sub,
+      req.user.email,
+      req.user.refreshToken,
+    );
   }
 }

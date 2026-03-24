@@ -2,6 +2,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -45,11 +46,7 @@ export class AuthService {
     const savedUser = await this.usersRepository.save(user);
 
     const tokens = await this.generateTokens(savedUser.id, savedUser.email);
-    const hashedRefreshToken = await this.hashData(tokens.refreshToken);
-
-    await this.usersRepository.update(savedUser.id, {
-      refreshToken: hashedRefreshToken,
-    });
+    await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
 
     return tokens;
   }
@@ -60,6 +57,30 @@ export class AuthService {
     });
 
     return { message: 'Выход выполнен успешно' };
+  }
+
+  async refreshTokens(userId: string, email: string, refreshToken: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Доступ запрещен');
+    }
+
+    const isRefreshTokenValid = await this.verifyData(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!isRefreshTokenValid) {
+      throw new UnauthorizedException('Неверный refresh token');
+    }
+
+    const tokens = await this.generateTokens(userId, email);
+    await this.updateRefreshToken(userId, tokens.refreshToken);
+
+    return tokens;
   }
 
   private async generateTokens(userId: string, email: string) {
@@ -82,6 +103,14 @@ export class AuthService {
     };
   }
 
+  private async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await this.hashData(refreshToken);
+
+    await this.usersRepository.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
+
   private async hashData(data: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const salt = crypto.randomBytes(16).toString('hex');
@@ -93,6 +122,21 @@ export class AuthService {
         }
 
         resolve(`${salt}:${derivedKey.toString('hex')}`);
+      });
+    });
+  }
+
+  private async verifyData(data: string, hashedData: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      const [salt, originalHash] = hashedData.split(':');
+
+      crypto.scrypt(data, salt, 64, (err, derivedKey) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(originalHash === derivedKey.toString('hex'));
       });
     });
   }
