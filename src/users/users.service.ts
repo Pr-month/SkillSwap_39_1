@@ -17,19 +17,7 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.usersRepository.find({
-      select: [
-        'id',
-        'name',
-        'email',
-        'about',
-        'birthdate',
-        'city',
-        'gender',
-        'avatar',
-        'role',
-      ],
-    });
+    return await this.usersRepository.find();
   }
 
   findOne(id: number) {
