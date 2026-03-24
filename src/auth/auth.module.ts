@@ -21,7 +21,7 @@ import { User } from '../users/entities/user.entity';
         signOptions: { expiresIn: config.expiresIn as StringValue },
       }),
     }),
-    TypeOrmModule.forFeature([User])
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RefreshTokenStrategy],

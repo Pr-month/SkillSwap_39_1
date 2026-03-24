@@ -23,7 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtSettings: ConfigType<typeof jwtConfig>,
-  ) { }
+  ) {}
 
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersRepository.findOne({
@@ -38,9 +38,7 @@ export class AuthService {
 
     const user = this.usersRepository.create({
       ...registerDto,
-      birthdate: registerDto.birthdate
-        ? new Date(registerDto.birthdate)
-        : null,
+      birthdate: registerDto.birthdate ? new Date(registerDto.birthdate) : null,
       password: hashedPassword,
     });
 

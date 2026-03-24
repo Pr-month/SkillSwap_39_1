@@ -7,8 +7,8 @@ async function bootstrap() {
   // Валидация входящих данных в контроллерах
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true,            // автоматически преобразует входные данные в экземпляры классов
-      whitelist: true,            // удаляет из объекта все свойства, которых нет в DTO
+      transform: true, // автоматически преобразует входные данные в экземпляры классов
+      whitelist: true, // удаляет из объекта все свойства, которых нет в DTO
       forbidNonWhitelisted: true, // выбрасывает ошибку, если пришли лишние поля
     }),
   );

@@ -11,10 +11,10 @@ import {
 
 export class RegisterDto {
   @IsString()
-  name: string;      // Имя пользователя
+  name: string; // Имя пользователя
 
   @IsEmail()
-  email: string;     // Почта
+  email: string; // Почта
 
   @IsStrongPassword({
     minLength: 8,
@@ -23,29 +23,29 @@ export class RegisterDto {
     minNumbers: 1,
     minSymbols: 1,
   })
-  password: string;    // Пароль
+  password: string; // Пароль
 
   // TODO: минимальная и максимальная дата
   @IsDateString()
-  birthdate: Date;     // Дата рождения
+  birthdate: Date; // Дата рождения
 
   // TODO: пол должен быть перечислением
   @IsString()
-  gender: string;      // Пол
+  gender: string; // Пол
 
   @IsString()
-  city: string;        // Город
+  city: string; // Город
 
   @IsString()
-  about: string;       // Информация о пользователе
+  about: string; // Информация о пользователе
 
   // TODO: аватар должен быть URL ???
   @IsString()
-  avatar: string;      // аватар
+  avatar: string; // аватар
 
   // TODO: навыки должны быть перечислением ???
   @IsString()
-  skills: string;      // навыки, которые создал пользователь
+  skills: string; // навыки, которые создал пользователь
 
   // TODO: навыки должны быть перечислением ???
   @IsString()
@@ -53,11 +53,11 @@ export class RegisterDto {
 
   // TODO: навыки должны быть перечислением ???
   @IsString()
-  favoriteSkills: string;  // навыки, которые пользователь добавил в избранное
+  favoriteSkills: string; // навыки, которые пользователь добавил в избранное
 
   // TODO: роли должны быть перечислением
   @IsString()
-  role: string;           // роль пользователя USER или ADMIN
+  role: string; // роль пользователя USER или ADMIN
 }
 
 /*
