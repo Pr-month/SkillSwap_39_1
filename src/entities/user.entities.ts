@@ -31,7 +31,7 @@ export class User {
   about: string;
 
   @Column({ type: 'date', nullable: true })
-  birthdate: Date;
+  birthdate: Date | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   city: string;
