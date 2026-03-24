@@ -1,7 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+/**
+ * Модуль для стратегии JwtAuthGuard, для проверки авторизации по access токену
+ */
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-jwt';
-import { Request } from 'express';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Inject } from '@nestjs/common';
+
 import { jwtConfig, TJwtConfig } from '../../config/jwt.config';
 import { JwtPayload } from '../types/types';
 
@@ -11,18 +15,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @Inject(jwtConfig.KEY)
     private readonly config: TJwtConfig,
   ) {
-    // В mixin типе PassportStrategy вызов super воспринимается линтером как небезопасный
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     super({
-      jwtFromRequest: (request: Request) => {
-        const authorizationHeader = request.headers.authorization;
-
-        if (!authorizationHeader?.startsWith('Bearer ')) {
-          return null;
-        }
-
-        return authorizationHeader.slice('Bearer '.length);
-      },
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: config.secret,
     });

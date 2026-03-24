@@ -1,15 +1,3 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entities';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { hashPassword, verifyPassword } from './utils/password.util';
 
 @Injectable()
 export class UsersService {
@@ -29,11 +17,6 @@ export class UsersService {
 
   findOne(id: number) {
     return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    void updateUserDto;
-    return `Обновление пользователя с id ${id}`;
   }
 
   async updateMyPassword(userId: string, updatePasswordDto: UpdatePasswordDto) {
@@ -78,6 +61,13 @@ export class UsersService {
     return {
       message: 'Пароль успешно обновлен',
     };
+
+  // Обновить пользователя
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.update(id, updateUserDto);
+    if (!user) throw new NotFoundException('Пользователь не найден в базе данных');
+    
+    return this.findOne(+id);
   }
 
   remove(id: number) {
