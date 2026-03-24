@@ -11,7 +11,6 @@ import { JwtAuthGuard } from './guards/jwt-access.guard';
 
 @Module({
   imports: [
-    ConfigModule.forFeature(jwtConfig),
     PassportModule,
     JwtModule.registerAsync({
       inject: [jwtConfig.KEY],

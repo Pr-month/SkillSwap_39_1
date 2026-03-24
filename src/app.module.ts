@@ -7,13 +7,14 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { dbConfig, IDBConfig } from './config/db.config';
 import { appConfig } from './config/app.config';
+import { jwtConfig } from './config/jwt.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [appConfig, dbConfig],
+      load: [appConfig, dbConfig, jwtConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [dbConfig.KEY],

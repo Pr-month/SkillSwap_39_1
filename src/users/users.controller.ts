@@ -1,8 +1,15 @@
+import { Controller, Post, Body, Get, Param, UseGuards, Patch, Req } from "@nestjs/common";
+import { JwtAuthGuard } from "src/auth/guards/jwt-access.guard";
+import { AuthRequest } from "src/auth/types/types";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdatePasswordDto } from "./dto/update-password.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { UsersService } from "./users.service";
 
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -25,21 +32,17 @@ export class UsersController {
     @Req() req: AuthRequest,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.usersService.updateMyPassword(req.user.id, updatePasswordDto);
+    return this.usersService.updateMyPassword(req.user.sub, updatePasswordDto);
   }
 
   // Обновление данных пользователя
   @Patch('me')
   @UseGuards(JwtAuthGuard)
   async updateMe(
-    @Request() req: AuthRequest,
+    @Req() req: AuthRequest,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(req.user.sub, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
 }
