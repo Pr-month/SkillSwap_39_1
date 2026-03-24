@@ -7,11 +7,11 @@ import {
   JoinTable,
 } from 'typeorm';
 
-import { Role } from 'src/common/enums/role.enum';
-import { Skill } from './skill.entity';
-import { Category } from './category.entity';
-import { Request } from './request.entity';
-import { Gender } from 'src/common/enums/gender.enum';
+import { Role } from '../common/enums/role.enum';
+import { Gender } from '../common/enums/gender.enum';
+import { Category } from '../categories/entities/category.entity';
+import { Skill } from '../skills/entities/skill.entity';
+import { Request } from '../requests/entities/request.entity';
 
 @Entity('users')
 export class User {
