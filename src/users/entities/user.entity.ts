@@ -31,7 +31,7 @@ export class User {
   about: string;
 
   @Column({ type: 'date', nullable: true })
-  birthdate: Date;
+  birthdate: Date | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   city: string;
@@ -54,7 +54,7 @@ export class User {
   role: Role;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  refreshToken: string;
+  refreshToken: string | null;
 
   // Связи
 
