@@ -1,26 +1,168 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigType } from '@nestjs/config';
+import { Repository } from 'typeorm';
+import * as crypto from 'crypto';
+import { jwtConfig } from 'src/config/jwt.config';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import type { StringValue } from 'ms';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    @Inject(jwtConfig.KEY)
+    private readonly jwtSettings: ConfigType<typeof jwtConfig>,
+  ) { }
+
+  async register(registerDto: RegisterDto) {
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: registerDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Пользователь с таким email уже существует');
+    }
+
+    const hashedPassword = await this.hashData(registerDto.password);
+
+    const user = this.usersRepository.create({
+      ...registerDto,
+      birthdate: registerDto.birthdate
+        ? new Date(registerDto.birthdate)
+        : null,
+      password: hashedPassword,
+    });
+
+    const savedUser = await this.usersRepository.save(user);
+
+    const tokens = await this.generateTokens(savedUser.id, savedUser.email);
+    await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
+
+    return tokens;
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async login(loginDto: LoginDto) {
+    const user = await this.usersRepository.findOne({
+      where: { email: loginDto.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Неверный email или пароль');
+    }
+
+    const isPasswordValid = await this.verifyData(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Неверный email или пароль');
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async logout(userId: string) {
+    await this.usersRepository.update(userId, {
+      refreshToken: null,
+    });
+
+    return { message: 'Выход выполнен успешно' };
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
+  async refreshTokens(userId: string, email: string, refreshToken: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Доступ запрещен');
+    }
+
+    const isRefreshTokenValid = await this.verifyData(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!isRefreshTokenValid) {
+      throw new UnauthorizedException('Неверный refresh token');
+    }
+
+    const tokens = await this.generateTokens(userId, email);
+    await this.updateRefreshToken(userId, tokens.refreshToken);
+
+    return tokens;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  private async generateTokens(userId: string, email: string) {
+    const payload = { sub: userId, email };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.jwtSettings.secret,
+        expiresIn: this.jwtSettings.expiresIn as StringValue,
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.jwtSettings.refreshSecret,
+        expiresIn: this.jwtSettings.refreshExpiresIn as StringValue,
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  private async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = await this.hashData(refreshToken);
+
+    await this.usersRepository.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+  }
+
+  private async hashData(data: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const salt = crypto.randomBytes(16).toString('hex');
+
+      crypto.scrypt(data, salt, 64, (err, derivedKey) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(`${salt}:${derivedKey.toString('hex')}`);
+      });
+    });
+  }
+
+  private async verifyData(data: string, hashedData: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      const [salt, originalHash] = hashedData.split(':');
+
+      crypto.scrypt(data, salt, 64, (err, derivedKey) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(originalHash === derivedKey.toString('hex'));
+      });
+    });
   }
 }
