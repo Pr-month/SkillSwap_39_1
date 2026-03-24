@@ -54,7 +54,7 @@ export class User {
   role: Role;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  refreshToken: string;
+  refreshToken: string | null;
 
   // Связи
 
