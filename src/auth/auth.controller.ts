@@ -11,6 +11,7 @@ import { Request } from 'express';
 
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import { AccessAuthGuard } from './guards/access-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
@@ -36,6 +37,12 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('login')
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 
   @HttpCode(HttpStatus.OK)
