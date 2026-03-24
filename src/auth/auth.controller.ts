@@ -12,7 +12,6 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AccessAuthGuard } from './guards/access-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
 interface AccessRequest extends Request {
@@ -46,7 +45,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AccessAuthGuard)
+  @UseGuards(RefreshAuthGuard)
   @Post('logout')
   logout(@Req() req: AccessRequest) {
     return this.authService.logout(req.user.sub);

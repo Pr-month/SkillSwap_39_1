@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import type { StringValue } from 'ms';
 import { jwtConfig, TJwtConfig } from '../config/jwt.config';
-import { JwtStrategy } from './strategies/jwt-access.strategy';
+import { User } from '../entities/user.entities';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-access.guard';
+import { JwtStrategy } from './strategies/jwt-access.strategy';
+import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { JwtAuthGuard } from './guards/jwt-access.guard';
         signOptions: { expiresIn: config.expiresIn as StringValue },
       }),
     }),
+    TypeOrmModule.forFeature([User])
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RefreshTokenStrategy],
