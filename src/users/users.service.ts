@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entities/user.entities";
 import { Repository } from "typeorm";
@@ -12,7 +12,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-  ) { }
+  ) {}
 
   create(createUserDto: CreateUserDto) {
     void createUserDto;
@@ -23,8 +23,19 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    if (isNaN(id) || id <= 0) {
+      throw new BadRequestException('Некорректный id');
+    }
+
+    const user = await this.usersRepository.findOneBy({ id: `${id}` });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    // return `This action returns a #${id} user`;
+    return user;
   }
 
   // Обновить пользователя
