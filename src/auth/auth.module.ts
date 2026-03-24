@@ -4,12 +4,12 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import type { StringValue } from 'ms';
 import { jwtConfig, TJwtConfig } from '../config/jwt.config';
-import { User } from '../entities/user.entities';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-access.guard';
 import { JwtStrategy } from './strategies/jwt-access.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [

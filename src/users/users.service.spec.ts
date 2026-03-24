@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { User } from '../entities/user.entities';
 import { UsersService } from './users.service';
 import { hashPassword, verifyPassword } from './utils/password.util';
+import { User } from './entities/user.entity';
 
 type UsersRepositoryMock = {
   findOne: jest.Mock<Promise<User | null>, [unknown]>;

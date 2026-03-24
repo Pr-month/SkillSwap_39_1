@@ -9,11 +9,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
-import { User } from 'src/entities/user.entities';
 import { jwtConfig } from 'src/config/jwt.config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { StringValue } from 'ms';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
