@@ -41,7 +41,7 @@ describe('UsersController', () => {
       controller.updateMyPassword(
         {
           user: {
-            id: 'user-id',
+            sub: 'user-id',
             email: 'user@example.com',
             role: 'USER',
           },
