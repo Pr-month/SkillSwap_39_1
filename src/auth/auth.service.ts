@@ -6,10 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigType } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
-import { jwtConfig } from 'src/config/jwt.config';
+import { jwtConfig, TJwtConfig } from 'src/config/jwt.config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { StringValue } from 'ms';
@@ -22,7 +21,7 @@ export class AuthService {
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
-    private readonly jwtSettings: ConfigType<typeof jwtConfig>,
+    private readonly jwtSettings: TJwtConfig,
   ) {}
 
   async register(registerDto: RegisterDto) {
