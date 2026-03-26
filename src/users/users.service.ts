@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ResponseUserDto } from './dto/response-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -27,28 +28,30 @@ export class UsersService {
     return await this.usersRepository.find();
   }
 
-  async findOne(id: number) {
-    if (isNaN(id) || id <= 0) {
+  async findOne(id: string) {
+    if (!id?.trim()) {
       throw new BadRequestException('Некорректный id');
     }
 
-    const user = await this.usersRepository.findOneBy({ id: `${id}` });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+    });
 
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
     }
 
-    // return `This action returns a #${id} user`;
-    return user;
+    return new ResponseUserDto(user);
   }
 
-  // Обновить пользователя
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.usersRepository.update(id, updateUserDto);
-    if (!user)
-      throw new NotFoundException('Пользователь не найден в базе данных');
+    const result = await this.usersRepository.update(id, updateUserDto);
 
-    return this.findOne(+id);
+    if (!result.affected) {
+      throw new NotFoundException('Пользователь не найден в базе данных');
+    }
+
+    return this.findOne(id);
   }
 
   async updateMyPassword(userId: string, updatePasswordDto: UpdatePasswordDto) {
