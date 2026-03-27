@@ -41,7 +41,7 @@ export class UsersService {
       throw new NotFoundException('Пользователь не найден');
     }
 
-    return new ResponseUserDto(user);
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
