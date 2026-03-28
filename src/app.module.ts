@@ -9,6 +9,7 @@ import { dbConfig, IDBConfig } from './config/db.config';
 import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
 import { SkillsModule } from './skills/skills.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SkillsModule } from './skills/skills.module';
     AuthModule,
     UsersModule,
     SkillsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
