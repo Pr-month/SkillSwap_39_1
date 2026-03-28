@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   Get,
-  Param,
   UseGuards,
   Patch,
   Req,
@@ -29,9 +28,10 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
-  @Get('me/:id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findMe(@Req() req: AuthRequest) {
+    return this.usersService.findOne(req.user.sub);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -43,7 +43,6 @@ export class UsersController {
     return this.usersService.updateMyPassword(req.user.sub, updatePasswordDto);
   }
 
-  // Обновление данных пользователя
   @Patch('me')
   @UseGuards(JwtAuthGuard)
   async updateMe(
