@@ -1,30 +1,25 @@
 import { diskStorage } from 'multer';
 import { join } from 'path';
-import { MAX_FILE_SIZE } from './files.config';
+import { existsSync, mkdirSync } from 'fs';
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
+import { MAX_FILE_SIZE } from './files.config';
 
 export const multerOptions: MulterOptions = {
   storage: diskStorage({
     destination: (_req, _file, cb) => {
-      cb(
-        null,
-        join(
-          __dirname,
-          process.env.UPLOAD_PATH_TEMP
-            ? `../public/${process.env.UPLOAD_PATH_TEMP}`
-            : '../public',
-        ),
-      );
+      const uploadPath = join(process.cwd(), 'public');
+      if (!existsSync(uploadPath)) mkdirSync(uploadPath, { recursive: true });
+      cb(null, uploadPath);
     },
     filename: (_req, file, cb) => {
       const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const extension = file.originalname.split('.').pop() || '';
-      cb(null, `file_${timestamp}_${randomString}.${extension}`);
+      const random = Math.random().toString(36).substring(2, 15);
+      const ext = file.originalname.split('.').pop() || '';
+      cb(null, `file_${timestamp}_${random}.${ext}`);
     },
   }),
   fileFilter: (_req, file, cb) => {
-    const types = [
+    const allowed = [
       'image/png',
       'image/jpg',
       'image/jpeg',
@@ -32,9 +27,7 @@ export const multerOptions: MulterOptions = {
       'image/svg+xml',
       'image/webp',
     ];
-    cb(null, types.includes(file.mimetype));
+    cb(null, allowed.includes(file.mimetype));
   },
-  limits: {
-    fileSize: MAX_FILE_SIZE,
-  },
+  limits: { fileSize: MAX_FILE_SIZE },
 };

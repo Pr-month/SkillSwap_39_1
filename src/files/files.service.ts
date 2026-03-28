@@ -12,7 +12,7 @@ export class FilesService {
 
   async saveFileInfo(file: Express.Multer.File, userId?: string) {
     // Формируем публичную ссылку
-    const publicUrl = `/uploads/${file.filename}`;
+    const publicUrl = `/${file.filename}`;
 
     // Создаем объект файла
     const fileEntity = this.fileRepository.create({

@@ -16,9 +16,7 @@ async function bootstrap() {
   );
 
   // Раздача статических файлов из папки public
-  app.useStaticAssets(join(__dirname, '..', 'public'), {
-    prefix: '/uploads/', // файлы будут доступны по /uploads/имя_файла
-  });
+  app.useStaticAssets(join(process.cwd(), 'public'));
 
   await app.listen(process.env.PORT ?? 3000);
 }
