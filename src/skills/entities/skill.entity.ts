@@ -37,7 +37,7 @@ export class Skill {
   owner: User;
 
   // Категория навыка
-  @ManyToOne(() => Category, {
+  @ManyToOne(() => Category, (category) => category.skills, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })

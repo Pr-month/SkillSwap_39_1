@@ -7,6 +7,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
+import { Skill } from '../../skills/entities/skill.entity';
+
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn('uuid')
@@ -16,7 +18,7 @@ export class Category {
   name: string;
 
   @Column({ type: 'uuid', name: 'parentId', nullable: true })
-  parentId: string;
+  parentId: string | null;
 
   // Связи
   @ManyToOne(() => Category, (category) => category.children, {
@@ -25,7 +27,7 @@ export class Category {
     onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'parentId' })
-  parent: Category; // Основная категория
+  parent: Category | null; // Основная категория
 
   @OneToMany(() => Category, (category) => category.parent, {
     cascade: true,
@@ -33,4 +35,8 @@ export class Category {
     onUpdate: 'CASCADE',
   })
   children: Category[];
+
+  // Навыки, относящиеся к категории
+  @OneToMany(() => Skill, (skill) => skill.category)
+  skills: Skill[];
 }

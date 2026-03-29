@@ -8,7 +8,9 @@ import { UsersModule } from './users/users.module';
 import { dbConfig, IDBConfig } from './config/db.config';
 import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
+import { FilesModule } from './files/files.module';
 import { SkillsModule } from './skills/skills.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { SkillsModule } from './skills/skills.module';
     }),
     AuthModule,
     UsersModule,
+    FilesModule,
     SkillsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
