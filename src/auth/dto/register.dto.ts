@@ -15,15 +15,7 @@ import {
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Gender } from '../../common/enums/gender.enum';
-
-/**
- * Убрать в строке начальные и конечные пробелы и двойные пробелы
- * @param value - исходная строка
- * @return - преобразованная строка
- */
-function normalizeString(value: string) {
-  return value.trim().replace(/\s{2,}/g, ' ');
-}
+import { normalizeString } from '../../common/utils';
 
 export class RegisterDto {
   // Имя пользователя
