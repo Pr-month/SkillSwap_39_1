@@ -7,6 +7,6 @@ import { Skill } from './entities/skill.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([Skill])],
   controllers: [SkillsController],
-  providers: [SkillsService]
+  providers: [SkillsService],
 })
 export class SkillsModule {}
