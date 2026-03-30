@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Skill } from './entities/skill.entity';
 import { Repository } from 'typeorm';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
+import { UpdateSkillDto } from './dto/update-skill-dto';
 
 @Injectable()
 export class SkillsService {
@@ -50,5 +51,49 @@ export class SkillsService {
     });
 
     return await this.skillRepository.save(skill);
+  }
+
+  async update(id: string, dto: UpdateSkillDto) {
+    const hasUpdates =
+      dto.title !== undefined ||
+      dto.description !== undefined ||
+      dto.images !== undefined ||
+      dto.categoryId !== undefined;
+
+    if (!hasUpdates) {
+      throw new BadRequestException('No fields provided for update');
+    }
+
+    const skill = await this.skillRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    if (dto.title !== undefined) {
+      skill.title = dto.title;
+    }
+
+    if (dto.description !== undefined) {
+      skill.description = dto.description;
+    }
+
+    if (dto.images !== undefined) {
+      skill.images = dto.images;
+    }
+
+    if (dto.categoryId !== undefined) {
+      skill.category = { id: dto.categoryId } as Skill['category'];
+    }
+
+    await this.skillRepository.save(skill);
+
+    return this.skillRepository.findOne({
+      where: { id },
+      relations: ['category'],
+    });
   }
 }

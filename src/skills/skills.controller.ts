@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
+import { UpdateSkillDto } from './dto/update-skill-dto';
 
 @Controller('skills')
 export class SkillsController {
@@ -15,5 +16,10 @@ export class SkillsController {
   @Post()
   create(@Body() dto: CreateSkillDto) {
     return this.skillsService.create(dto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateSkillDto) {
+    return this.skillsService.update(id, dto);
   }
 }
