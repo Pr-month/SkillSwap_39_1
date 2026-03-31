@@ -96,4 +96,16 @@ export class SkillsService {
       relations: ['category'],
     });
   }
+
+  async remove(id: string) {
+    const result = await this.skillRepository.delete(id);
+
+    if (!result.affected) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    return {
+      message: 'Skill deleted successfully',
+    };
+  }
 }

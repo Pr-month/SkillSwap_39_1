@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
@@ -21,5 +30,10 @@ export class SkillsController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateSkillDto) {
     return this.skillsService.update(id, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.skillsService.remove(id);
   }
 }
