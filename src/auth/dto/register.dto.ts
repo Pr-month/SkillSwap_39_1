@@ -1,48 +1,73 @@
+/**
+ * Модуль для DTO (Data Transfer Object) для авторизации
+ */
 import {
-  IsDateString,
-  IsEmail,
-  IsEnum,
-  IsOptional,
   IsString,
-  MaxLength,
+  IsEmail,
+  IsDate,
+  IsStrongPassword,
+  IsEnum,
+  MinDate,
+  MaxDate,
   MinLength,
+  MaxLength,
+  IsOptional,
 } from 'class-validator';
-import { Gender } from 'src/common/enums/gender.enum';
+import { Transform } from 'class-transformer';
+import { Gender } from '../../common/enums/gender.enum';
+import { normalizeString } from '../../common/utils';
 
 export class RegisterDto {
+  // Имя пользователя
   @IsString()
   @MinLength(2)
   @MaxLength(100)
   name: string;
 
+  // Почта
   @IsEmail()
   @MaxLength(255)
   email: string;
 
-  @IsString()
-  @MinLength(6)
-  @MaxLength(255)
+  // Пароль
+  @IsStrongPassword({
+    minLowercase: 1,
+    minUppercase: 1,
+    minNumbers: 1,
+    minSymbols: 1,
+  })
+  @MinLength(8)
+  @MaxLength(50)
   password: string;
 
-  @IsOptional()
-  @IsString()
-  about?: string;
+  // Дата рождения
+  @IsDate()
+  @MinDate(new Date(1900, 0, 1))
+  @MaxDate(() => new Date())
+  birthdate: Date;
 
-  @IsOptional()
-  @IsDateString()
-  birthdate?: string;
-
-  @IsOptional()
+  // Город
   @IsString()
+  @IsOptional()
+  @Transform(({ value }) => normalizeString(String(value)))
   @MaxLength(100)
   city?: string;
 
-  @IsOptional()
+  // Пол
   @IsEnum(Gender)
-  gender?: Gender;
-
   @IsOptional()
+  gender: Gender;
+
+  // Информация о пользователе
   @IsString()
+  @IsOptional()
+  @Transform(({ value }) => normalizeString(String(value)))
   @MaxLength(255)
-  avatar?: string;
+  about: string;
+
+  // Аватар
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  avatar: string;
 }

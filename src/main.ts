@@ -1,18 +1,26 @@
-import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { appConfig, IAppConfig } from './config/app.config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // Валидация входящих данных в контроллерах
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true, // автоматически преобразует входные данные в экземпляры классов
-      whitelist: true, // удаляет из объекта все свойства, которых нет в DTO
-      forbidNonWhitelisted: true, // выбрасывает ошибку, если пришли лишние поля
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  // Раздача статических файлов из папки public
+  app.useStaticAssets(join(process.cwd(), 'public'));
+
+  const config = app.get<IAppConfig>(appConfig.KEY);
+  await app.listen(config.port);
 }
 bootstrap();
