@@ -17,9 +17,31 @@ export class CategoriesService {
     private readonly categoriesRepository: Repository<Category>,
   ) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    void createCategoryDto;
-    return 'Создание категории';
+  async create(createCategoryDto: CreateCategoryDto) {
+    const { name, parentId } = createCategoryDto;
+
+    const existingCategory = await this.categoriesRepository.findOneBy({
+      name,
+    });
+
+    if (existingCategory) {
+      throw new ConflictException(
+        `Категория с названием "${name}" уже существует`,
+      );
+    }
+    const parent = parentId ? await this.categoriesRepository.findOneBy({ id: parentId }) : null;
+      
+      if (parentId && !parent) {
+        throw new NotFoundException(`Родительская категория с id "${parentId}" не найдена`);
+      }
+
+    const category = this.categoriesRepository.create({
+      name,
+      parent,
+      parentId: parent?.id || null,
+    });
+
+    return this.categoriesRepository.save(category);
   }
 
   findAll() {
