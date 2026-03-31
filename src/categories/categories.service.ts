@@ -92,7 +92,14 @@ export class CategoriesService {
     return this.categoriesRepository.save(category);
   }
 
-  remove(id: string) {
-    return `Удаление категории с id ${id}`;
+  async remove(id: string) {
+    const category = await this.categoriesRepository.findOneBy({ id });
+
+    if (!category)
+      throw new NotFoundException('Категория для удаления не найдена');
+
+    await this.categoriesRepository.remove(category);
+
+    return { message: `Категория "${category.name}" успешно удалена` };
   }
 }
