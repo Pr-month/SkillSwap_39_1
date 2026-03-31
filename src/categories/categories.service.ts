@@ -29,11 +29,15 @@ export class CategoriesService {
         `Категория с названием "${name}" уже существует`,
       );
     }
-    const parent = parentId ? await this.categoriesRepository.findOneBy({ id: parentId }) : null;
-      
-      if (parentId && !parent) {
-        throw new NotFoundException(`Родительская категория с id "${parentId}" не найдена`);
-      }
+    const parent = parentId
+      ? await this.categoriesRepository.findOneBy({ id: parentId })
+      : null;
+
+    if (parentId && !parent) {
+      throw new NotFoundException(
+        `Родительская категория с id "${parentId}" не найдена`,
+      );
+    }
 
     const category = this.categoriesRepository.create({
       name,
