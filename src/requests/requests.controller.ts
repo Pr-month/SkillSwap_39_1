@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Patch,
   Post,
   Param,
@@ -30,5 +31,10 @@ export class RequestsController {
     @Body() dto: UpdateRequestDto,
   ) {
     return this.requestsService.update(id, req.user.sub, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.requestsService.remove(id, req.user.sub);
   }
 }

@@ -11,6 +11,7 @@ import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { User } from '../users/entities/user.entity';
 import { Skill } from '../skills/entities/skill.entity';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class RequestsService {
@@ -82,5 +83,42 @@ export class RequestsService {
     request.status = dto.status;
 
     return await this.requestsRepository.save(request);
+  }
+
+  async remove(id: string, userId: string) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isAdmin = user.role === Role.ADMIN;
+    const isSender = request.senderId === userId;
+
+    if (!isAdmin && !isSender) {
+      throw new ForbiddenException(
+        'Удалить можно только отправленную заявку',
+      );
+    }
+
+    await this.requestsRepository.delete(id);
+
+    return {
+      message: 'Заявка успешно удалена',
+    };
   }
 }
