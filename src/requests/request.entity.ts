@@ -7,9 +7,9 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
-import { RequestStatus } from '../../common/enums/request-status.enum';
-import { Skill } from '../../skills/entities/skill.entity';
-import { User } from '../../users/entities/user.entity';
+import { RequestStatus } from '../common/enums/request-status.enum';
+import { Skill } from '../skills/entities/skill.entity';
+import { User } from '../users/entities/user.entity';
 
 @Entity('requests')
 export class Request {

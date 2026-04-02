@@ -11,7 +11,7 @@ import { Role } from '../../common/enums/role.enum';
 import { Gender } from '../../common/enums/gender.enum';
 import { Skill } from '../../skills/entities/skill.entity';
 import { Category } from '../../categories/entities/category.entity';
-import { Request } from '../../requests/entities/request.entity';
+import { Request } from '../../requests/request.entity';
 import { Exclude } from 'class-transformer';
 
 @Entity('users')
