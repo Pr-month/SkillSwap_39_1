@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
 import { User } from '../users/entities/user.entity';
 import { Skill } from '../skills/entities/skill.entity';
 
@@ -60,6 +62,24 @@ export class RequestsService {
       offeredSkillId: dto.offeredSkillId ?? null,
       requestedSkillId: dto.requestedSkillId ?? null,
     });
+
+    return await this.requestsRepository.save(request);
+  }
+
+  async update(id: string, userId: string, dto: UpdateRequestDto) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new ForbiddenException('Можно обновить только входящую заявку');
+    }
+
+    request.status = dto.status;
 
     return await this.requestsRepository.save(request);
   }
