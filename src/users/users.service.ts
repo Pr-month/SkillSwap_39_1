@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { GetUsersQueryDto } from './dto/get-users-query.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -23,8 +24,33 @@ export class UsersService {
     return 'Создание пользователя';
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.usersRepository.find();
+  async findAll(queryDto: GetUsersQueryDto) {
+    const { page = 1, limit = 10 } = queryDto;
+
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const [users, total] = await this.usersRepository.findAndCount({
+      skip,
+      take,
+      order: {
+        name: 'ASC',
+      },
+    });
+
+    return {
+      data: [...users],
+      meta: {
+        page,
+        limit,
+        skip,
+        take,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {
