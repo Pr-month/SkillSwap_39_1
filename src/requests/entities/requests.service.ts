@@ -1,12 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { User } from '../users/entities/user.entity';
+import { Skill } from '../skills/entities/skill.entity';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    @InjectRepository(Skill)
+    private readonly skillsRepository: Repository<Skill>,
   ) {}
+
+  async create(senderId: string, dto: CreateRequestDto) {
+    if (senderId === dto.receiverId) {
+      throw new BadRequestException('Нельзя отправить заявку самому себе');
+    }
+
+    const receiver = await this.usersRepository.findOne({
+      where: { id: dto.receiverId },
+    });
+
+    if (!receiver) {
+      throw new NotFoundException('Получатель заявки не найден');
+    }
+
+    if (dto.offeredSkillId) {
+      const offeredSkill = await this.skillsRepository.findOne({
+        where: { id: dto.offeredSkillId },
+      });
+
+      if (!offeredSkill) {
+        throw new NotFoundException('Предлагаемый навык не найден');
+      }
+    }
+
+    if (dto.requestedSkillId) {
+      const requestedSkill = await this.skillsRepository.findOne({
+        where: { id: dto.requestedSkillId },
+      });
+
+      if (!requestedSkill) {
+        throw new NotFoundException('Запрашиваемый навык не найден');
+      }
+    }
+
+    const request = this.requestsRepository.create({
+      senderId,
+      receiverId: dto.receiverId,
+      offeredSkillId: dto.offeredSkillId ?? null,
+      requestedSkillId: dto.requestedSkillId ?? null,
+    });
+
+    return await this.requestsRepository.save(request);
+  }
 }
