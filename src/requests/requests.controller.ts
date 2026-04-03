@@ -21,4 +21,14 @@ export class RequestsController {
   ) {
     return this.requestsService.findOutgoing(req.user.sub, page, limit);
   }
+  
+  
+    @Get('incoming')
+  findIncoming(
+    @Req() req: AuthRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number, //для пагинации через query-параметры при необходимости
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.requestsService.findIncoming(req.user.sub, page, limit);
+  }
 }
