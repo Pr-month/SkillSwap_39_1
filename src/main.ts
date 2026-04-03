@@ -27,7 +27,7 @@ async function bootstrap() {
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api', app, swaggerDocument);
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
 
   const config = app.get<IAppConfig>(appConfig.KEY);
   await app.listen(config.port);
