@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Request } from '../request.entity';
-import { RequestStatus } from '../../common/enums/request-status.enum';
+import { Request } from './request.entity';
+import { RequestStatus } from '../common/enums/request-status.enum';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
-  ) {}
+  ) { }
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -54,8 +54,8 @@ export class RequestsService {
       },
     };
   }
-  
-   async findIncoming(userId: string, page: number = 1, limit: number = 10) {
+
+  async findIncoming(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
       page = 1;
     }
