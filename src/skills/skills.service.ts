@@ -9,12 +9,15 @@ import { Repository } from 'typeorm';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill-dto';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class SkillsService {
   constructor(
     @InjectRepository(Skill)
     private readonly skillRepository: Repository<Skill>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async findAll(queryDto: GetSkillsQueryDto) {
@@ -110,6 +113,46 @@ export class SkillsService {
 
     return {
       message: 'Skill deleted successfully',
+    };
+  }
+
+  async removeFromFavoriteSkill(skillId: string, userId: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Не существует данного навыка');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isFavorite = user.favoriteSkills.some(
+      (favoriteSkill) => favoriteSkill.id === skillId,
+    );
+
+    if (!isFavorite) {
+      throw new NotFoundException('Навык не найден в избранном');
+    }
+
+    user.favoriteSkills = user.favoriteSkills.filter(
+      (favoriteSkill) => favoriteSkill.id !== skillId,
+    );
+    await this.userRepository.save(user);
+
+    return {
+      message: `Навык ${skill.title} удален из избранного`,
+      skill: {
+        id: skill.id,
+        title: skill.title,
+      },
     };
   }
 }
