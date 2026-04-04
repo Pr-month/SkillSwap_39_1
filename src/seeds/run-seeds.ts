@@ -11,9 +11,9 @@ export async function runAllSeeds() {
   try {
     await dataSource.initialize();
     console.log('Подключение к БД установлено');
-
-    await seedUsers(dataSource);
     await seedCategories(dataSource);
+    await seedUsers(dataSource);
+
   } finally {
     // проверяем если initialize упадет
     if (dataSource.isInitialized) {
