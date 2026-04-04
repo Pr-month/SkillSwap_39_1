@@ -1,5 +1,8 @@
 import { ConfigType, registerAs } from '@nestjs/config';
 import { DataSourceOptions } from 'typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export const dbConfig = registerAs(
   'DB_CONFIG',

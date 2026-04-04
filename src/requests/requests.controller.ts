@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
+  Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -17,7 +21,26 @@ import { RequestsService } from './requests.service';
 @UseGuards(JwtAuthGuard)
 @Controller('requests')
 export class RequestsController {
-  constructor(private readonly requestsService: RequestsService) {}
+  constructor(private readonly requestsService: RequestsService) { }
+
+  @Get('outgoing')
+  findOutgoing(
+    @Req() req: AuthRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number, //для пагинации через query-параметры при необходимости
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.requestsService.findOutgoing(req.user.sub, page, limit);
+  }
+
+
+  @Get('incoming')
+  findIncoming(
+    @Req() req: AuthRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number, //для пагинации через query-параметры при необходимости
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    return this.requestsService.findIncoming(req.user.sub, page, limit);
+  }
 
   @Post()
   create(@Req() req: AuthRequest, @Body() dto: CreateRequestDto) {
