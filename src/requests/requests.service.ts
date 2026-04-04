@@ -9,7 +9,7 @@ export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
-  ) { }
+  ) {}
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
