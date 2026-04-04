@@ -1,3 +1,6 @@
+import { RequestStatus } from 'src/common/enums/request-status.enum';
+import { Skill } from 'src/skills/entities/skill.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,9 +10,6 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
-import { RequestStatus } from '../common/enums/request-status.enum';
-import { Skill } from '../skills/entities/skill.entity';
-import { User } from '../users/entities/user.entity';
 
 @Entity('requests')
 export class Request {

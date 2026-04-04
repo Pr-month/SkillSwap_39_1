@@ -1,0 +1,210 @@
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { RequestStatus } from '../common/enums/request-status.enum';
+import { Role } from 'src/common/enums/role.enum';
+import { Request } from './entities/request.entity';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { Skill } from 'src/skills/entities/skill.entity';
+import { User } from 'src/users/entities/user.entity';
+
+@Injectable()
+export class RequestsService {
+  constructor(
+    @InjectRepository(Request)
+    private readonly requestsRepository: Repository<Request>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    @InjectRepository(Skill)
+    private readonly skillsRepository: Repository<Skill>,
+  ) { }
+
+  async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
+    if (page < 1) {
+      page = 1;
+    }
+    if (limit < 1) {
+      limit = 10;
+    }
+    if (limit > 100) {
+      limit = 100;
+    }
+
+    const [requestsIncomingData, totalRequest] =
+      await this.requestsRepository.findAndCount({
+        where: {
+          senderId: userId,
+          status: In([RequestStatus.IN_PROGRESS, RequestStatus.PENDING]),
+        },
+        relations: {
+          receiver: true, //загружаем информацию о получателе заявки
+          offeredSkill: true, //загружаем информацию о предлагаемых навыках
+          requestedSkill: true, //загружаем информацию о запрашиваемых навыках
+        },
+        order: { createdAt: 'DESC' }, //возвращаем список заявок по принципу от последней созданной
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+
+    if (!requestsIncomingData) {
+      throw new NotFoundException(
+        'Пользователь или исходящие заявки не найдены',
+      );
+    }
+
+    return {
+      data: requestsIncomingData,
+      pagination: {
+        page,
+        limit,
+        total: totalRequest,
+        totalPage: Math.ceil(totalRequest / 10),
+      },
+    };
+  }
+
+  async findIncoming(userId: string, page: number = 1, limit: number = 10) {
+    if (page < 1) {
+      page = 1;
+    }
+    if (limit < 1) {
+      limit = 10;
+    }
+    if (limit > 100) {
+      limit = 100;
+    }
+
+    const [requestsIncomingData, totalRequest] =
+      await this.requestsRepository.findAndCount({
+        where: {
+          receiverId: userId,
+          status: In([RequestStatus.IN_PROGRESS, RequestStatus.PENDING]),
+        },
+        relations: {
+          sender: true, //загружаем информацию об отправителе заявки
+          offeredSkill: true, //загружаем информацию о предлагаемых навыках
+          requestedSkill: true, //загружаем информацию о запрашиваемых навыках
+        },
+        order: { createdAt: 'DESC' }, //возвращаем список заявок по принципу от последней созданной
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+
+    if (!requestsIncomingData) {
+      throw new NotFoundException(
+        'Пользователь или входящие заявки не найдены',
+      );
+    }
+
+    return {
+      data: requestsIncomingData,
+      pagination: {
+        page,
+        limit,
+        total: totalRequest,
+        totalPage: Math.ceil(totalRequest / 10),
+      },
+    };
+  }
+
+  async create(senderId: string, dto: CreateRequestDto) {
+    if (senderId === dto.receiverId) {
+      throw new BadRequestException('Нельзя отправить заявку самому себе');
+    }
+
+    const receiver = await this.usersRepository.findOne({
+      where: { id: dto.receiverId },
+    });
+
+    if (!receiver) {
+      throw new NotFoundException('Получатель заявки не найден');
+    }
+
+    let offeredSkill: Skill | null = null;
+    if (dto.offeredSkillId) {
+      offeredSkill = await this.skillsRepository.findOne({
+        where: { id: dto.offeredSkillId },
+      });
+
+      if (!offeredSkill) {
+        throw new NotFoundException('Предлагаемый навык не найден');
+      }
+    }
+
+    let requestedSkill: Skill | null = null;
+    if (dto.requestedSkillId) {
+      requestedSkill = await this.skillsRepository.findOne({
+        where: { id: dto.requestedSkillId },
+      });
+
+      if (!requestedSkill) {
+        throw new NotFoundException('Запрашиваемый навык не найден');
+      }
+    }
+
+    const request = this.requestsRepository.create({
+      senderId: senderId,
+      receiverId: dto.receiverId,
+      offeredSkillId: dto.offeredSkillId,
+      requestedSkillId: dto.requestedSkillId,
+    });
+
+    return await this.requestsRepository.save(request);
+  }
+
+  async update(id: string, userId: string, dto: UpdateRequestDto) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new ForbiddenException('Можно обновить только входящую заявку');
+    }
+
+    request.status = dto.status;
+
+    return await this.requestsRepository.save(request);
+  }
+
+  async remove(id: string, userId: string) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isAdmin = user.role === Role.ADMIN;
+    const isSender = request.senderId === userId;
+
+    if (!isAdmin && !isSender) {
+      throw new ForbiddenException(
+        'Удалить можно только отправленную заявку',
+      );
+    }
+
+    await this.requestsRepository.delete(id);
+
+    return {
+      message: 'Заявка успешно удалена',
+    };
+  }
+}
