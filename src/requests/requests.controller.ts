@@ -1,14 +1,24 @@
 import {
+  Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { RequestsService } from './requests.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
 import { AuthRequest } from '../auth/types/types';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { RequestsService } from './requests.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) { }
@@ -30,5 +40,24 @@ export class RequestsController {
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     return this.requestsService.findIncoming(req.user.sub, page, limit);
+  }
+
+  @Post()
+  create(@Req() req: AuthRequest, @Body() dto: CreateRequestDto) {
+    return this.requestsService.create(req.user.sub, dto);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Req() req: AuthRequest,
+    @Body() dto: UpdateRequestDto,
+  ) {
+    return this.requestsService.update(id, req.user.sub, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.requestsService.remove(id, req.user.sub);
   }
 }
