@@ -1,8 +1,13 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
-import { RequestsService } from './requests.service';
-import { AuthRequest } from '../auth/types/types';
-import { FindRequestsQueryDto } from './dto/find-requests-query.dto';
 
+import { UseGuards, Controller, Get, Req, Query, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
+import { AuthRequest } from '../auth/types/types';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { FindRequestsQueryDto } from './dto/find-requests-query.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { RequestsService } from './requests.service';
+
+@UseGuards(JwtAuthGuard)
 @Controller('requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
@@ -23,5 +28,24 @@ export class RequestsController {
       query.page ?? 1,
       query.limit ?? 10,
     );
+  }
+
+  @Post()
+  create(@Req() req: AuthRequest, @Body() dto: CreateRequestDto) {
+    return this.requestsService.create(req.user.sub, dto);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Req() req: AuthRequest,
+    @Body() dto: UpdateRequestDto,
+  ) {
+    return this.requestsService.update(id, req.user.sub, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.requestsService.remove(id, req.user.sub);
   }
 }
