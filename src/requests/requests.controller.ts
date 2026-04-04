@@ -1,12 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
-  Patch,
-  Post,
-  Param,
-  Req,
-  UseGuards,
   DefaultValuePipe,
   Delete,
   Get,
@@ -17,6 +11,7 @@ import {
   Query,
   Req,
   UseGuards,
+
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
 import { AuthRequest } from '../auth/types/types';
