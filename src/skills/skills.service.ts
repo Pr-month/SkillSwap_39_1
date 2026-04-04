@@ -117,6 +117,47 @@ export class SkillsService {
     };
   }
 
+  async removeFromFavoriteSkill(skillId: string, userId: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Не существует данного навыка');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isFavorite = user.favoriteSkills.some(
+      (favoriteSkill) => favoriteSkill.id === skillId,
+    );
+
+    if (!isFavorite) {
+      throw new NotFoundException('Навык не найден в избранном');
+    }
+
+    user.favoriteSkills = user.favoriteSkills.filter(
+      (favoriteSkill) => favoriteSkill.id !== skillId,
+    );
+    await this.userRepository.save(user);
+
+    return {
+      message: `Навык ${skill.title} удален из избранного`,
+      skill: {
+        id: skill.id,
+        title: skill.title,
+      },
+    };
+  }
+  
+  
     async addToFavoriteSkill(skillId: string, userId: string) {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },

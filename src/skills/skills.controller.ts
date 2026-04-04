@@ -42,6 +42,14 @@ export class SkillsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Delete(':id/favorite')
+  async removeFromFavorites(
+    @Param('id') skillId: string,
+    @Req() req: AuthRequest,
+  ) {
+    return this.skillsService.removeFromFavoriteSkill(skillId, req.user.sub);
+  }
+  
   @Post(':id/favorite')
   async addToFavorites(
     @Param('id') skillId: string,
