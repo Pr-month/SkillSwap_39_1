@@ -30,7 +30,14 @@ export class UsersService {
     const skip = (page - 1) * limit;
     const take = limit;
 
-    const [users, total] = await this.usersRepository.findAndCount({
+    const total = await this.usersRepository.count();
+    const totalPages = Math.ceil(total / limit);
+
+    if (total > 0 && page > totalPages) {
+      throw new NotFoundException('Страница пользователей не найдена');
+    }
+
+    const users = await this.usersRepository.find({
       skip,
       take,
       order: {
@@ -46,8 +53,8 @@ export class UsersService {
         skip,
         take,
         total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
+        totalPages,
+        hasNext: page < totalPages,
         hasPrev: page > 1,
       },
     };
