@@ -8,16 +8,21 @@ import {
   Req,
   UseGuards,
   DefaultValuePipe,
+  Delete,
   Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
-import { AuthRequest } from 'src/auth/types/types';
+import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
+import { AuthRequest } from '../auth/types/types';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { RequestsService } from './requests.service';
-
 
 @UseGuards(JwtAuthGuard)
 @Controller('requests')

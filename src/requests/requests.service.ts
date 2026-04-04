@@ -1,9 +1,9 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { Request } from './entities/request.entity';
 import { RequestStatus } from '../common/enums/request-status.enum';
 import { Role } from 'src/common/enums/role.enum';
-import { Request } from './entities/request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Skill } from 'src/skills/entities/skill.entity';
@@ -109,21 +109,25 @@ export class RequestsService {
   }
 
   async create(senderId: string, dto: CreateRequestDto) {
-    if (senderId === dto.receiverId) {
+    const requestedSkill = await this.skillsRepository.findOne({
+      where: { id: dto.requestedSkillId },
+      relations: {
+        owner: true,
+      },
+    });
+
+    if (!requestedSkill) {
+      throw new NotFoundException('Запрашиваемый навык не найден');
+    }
+
+    const receiverId = requestedSkill.owner.id;
+
+    if (senderId === receiverId) {
       throw new BadRequestException('Нельзя отправить заявку самому себе');
     }
 
-    const receiver = await this.usersRepository.findOne({
-      where: { id: dto.receiverId },
-    });
-
-    if (!receiver) {
-      throw new NotFoundException('Получатель заявки не найден');
-    }
-
-    let offeredSkill: Skill | null = null;
     if (dto.offeredSkillId) {
-      offeredSkill = await this.skillsRepository.findOne({
+      const offeredSkill = await this.skillsRepository.findOne({
         where: { id: dto.offeredSkillId },
       });
 
@@ -132,22 +136,13 @@ export class RequestsService {
       }
     }
 
-    let requestedSkill: Skill | null = null;
-    if (dto.requestedSkillId) {
-      requestedSkill = await this.skillsRepository.findOne({
-        where: { id: dto.requestedSkillId },
-      });
 
-      if (!requestedSkill) {
-        throw new NotFoundException('Запрашиваемый навык не найден');
-      }
-    }
 
     const request = this.requestsRepository.create({
-      senderId: senderId,
-      receiverId: dto.receiverId,
-      offeredSkillId: dto.offeredSkillId,
-      requestedSkillId: dto.requestedSkillId,
+      sender: { id: senderId },
+      receiver: { id: receiverId },
+      offeredSkill: { id: dto.offeredSkillId },
+      requestedSkill: { id: dto.requestedSkillId },
     });
 
     return await this.requestsRepository.save(request);
