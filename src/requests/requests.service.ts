@@ -1,14 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException  } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Request } from './request.entity';
+import { Request } from './entities/request.entity';
 import { RequestStatus } from '../common/enums/request-status.enum';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { SkillsService } from 'src/skills/skills.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
+    private readonly notificationsGateway: NotificationsGateway,
+    private readonly skillsService: SkillsService,
+    private readonly usersService: UsersService,
   ) { }
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
@@ -98,4 +104,130 @@ export class RequestsService {
       },
     };
   }
+
+  async createRequest(
+    senderId: string,
+    offeredSkillId: string,
+    requestedSkillId: string,
+  ) {
+    // Получаем информацию о навыках
+    const offeredSkill = await this.skillsService.findOne(offeredSkillId);
+    if (!offeredSkill) {
+      throw new NotFoundException('Предлагаемый навык не найден');
+    }
+
+    const requestedSkill = await this.skillsService.findOne(requestedSkillId);
+    if (!requestedSkill) {
+      throw new NotFoundException('Запрашиваемый навык не найден');
+    }
+
+    if (offeredSkill.owner.id !== senderId) {
+      throw new BadRequestException('Вы можете предлагать только свои навыки');
+    }
+
+    if (offeredSkill.owner.id === requestedSkill.owner.id) {
+      throw new BadRequestException('Нельзя отправить заявку самому себе');
+    }
+
+    const request = this.requestsRepository.create({
+      senderId: senderId,
+      receiverId: requestedSkill.owner.id,
+      offeredSkillId: offeredSkillId,
+      requestedSkillId: requestedSkillId,
+      status: RequestStatus.PENDING,
+      isRead: false,
+    });
+
+    await this.requestsRepository.save(request);
+
+    const sender = await this.usersService.findOne(senderId);
+
+    await this.notificationsGateway.notifyUser(requestedSkill.owner.id, {
+      type: 'new_request',
+      skillTitle: requestedSkill.title,
+      fromUser: {
+        id: sender.id,
+        name: sender.name,
+      },
+    });
+
+    return this.requestsRepository.findOne({
+      where: { id: request.id },
+      relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
+    });
+  }
+
+ 
+  async acceptRequest(requestId: string, userId: string) {
+    const request = await this.requestsRepository.findOne({
+      where: { id: requestId },
+      relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new BadRequestException('Вы можете принять только входящую заявку');
+    }
+
+    if (request.status !== RequestStatus.PENDING) {
+      throw new BadRequestException('Заявка не в ожидании');
+    }
+
+    request.status = RequestStatus.IN_PROGRESS;
+    await this.requestsRepository.save(request);
+
+    await this.notificationsGateway.notifyUser(request.senderId, {
+      type: 'request_accepted',
+      skillTitle: request.requestedSkill.title,
+      fromUser: {
+        id: request.receiver.id,
+        name: request.receiver.name,
+      },
+    });
+
+    return this.requestsRepository.findOne({
+        where: { id: requestId },
+        relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
+    });
+  }
+
+    async rejectRequest(requestId: string, userId: string) {
+      const request = await this.requestsRepository.findOne({
+        where: { id: requestId },
+        relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
+      });
+
+      if (!request) {
+        throw new NotFoundException('Заявка не найдена');
+      }
+
+      if (request.receiverId !== userId) {
+        throw new BadRequestException('Вы можете отклонить только входящую заявку');
+      }
+
+      if (request.status !== RequestStatus.PENDING) {
+        throw new BadRequestException('Можно отклонить только заявку в статусе ожидания');
+      }
+
+      request.status = RequestStatus.REJECTED;
+      await this.requestsRepository.save(request);
+
+      await this.notificationsGateway.notifyUser(request.senderId, {
+        type: 'request_rejected',
+        skillTitle: request.requestedSkill.title,
+        fromUser: {
+          id: request.receiver.id,
+          name: request.receiver.name,
+        },
+      });
+
+      return {
+        message: 'Заявка успешно отклонена',
+        requestId: request.id,
+        status: request.status,
+      };
+    }
 }
