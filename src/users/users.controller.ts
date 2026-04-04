@@ -5,11 +5,13 @@ import {
   Get,
   UseGuards,
   Patch,
+  Query,
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
 import { AuthRequest } from 'src/auth/types/types';
 import { CreateUserDto } from './dto/create-user.dto';
+import { GetUsersQueryDto } from './dto/get-users-query.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
@@ -24,8 +26,8 @@ export class UsersController {
   }
 
   @Get()
-  async findAll() {
-    return await this.usersService.findAll();
+  async findAll(@Query() query: GetUsersQueryDto) {
+    return await this.usersService.findAll(query);
   }
 
   @UseGuards(JwtAuthGuard)
