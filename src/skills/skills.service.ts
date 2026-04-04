@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ConflictException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Skill } from './entities/skill.entity';
@@ -149,6 +150,45 @@ export class SkillsService {
 
     return {
       message: `Навык ${skill.title} удален из избранного`,
+      skill: {
+        id: skill.id,
+        title: skill.title,
+      },
+    };
+  }
+  
+  
+    async addToFavoriteSkill(skillId: string, userId: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Не существует данного навыка');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['favoriteSkills'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isAlreadyFavorite = user.favoriteSkills.some(
+      (favSkill) => favSkill.id === skillId,
+    );
+
+    if (isAlreadyFavorite) {
+      throw new ConflictException('Навык уже был добавлен в избранное ранее');
+    }
+
+    user.favoriteSkills.push(skill);
+    await this.userRepository.save(user);
+
+    return {
+      message: `Навык ${skill.title} добавлен в избранное`,
       skill: {
         id: skill.id,
         title: skill.title,
