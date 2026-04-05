@@ -35,6 +35,12 @@ export class SkillsService {
       },
     });
 
+    const totalPages = Math.ceil(total / limit);
+
+    if (page > Math.max(totalPages, 1)) {
+      throw new NotFoundException('Страница навыков не найдена');
+    }
+
     return {
       data: [...skills],
       meta: {
@@ -43,8 +49,8 @@ export class SkillsService {
         skip,
         take,
         total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
+        totalPages,
+        hasNext: page < totalPages,
         hasPrev: page > 1,
       },
     };
