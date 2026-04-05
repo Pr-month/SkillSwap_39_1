@@ -35,6 +35,8 @@ export class CategoriesController {
     return this.categoriesService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles([Role.ADMIN])
   @Patch(':id')
   update(
     @Param('id') id: string,
