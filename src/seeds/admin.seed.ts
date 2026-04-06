@@ -15,9 +15,6 @@ import { hashPassword } from '../users/utils/password.util';
 export async function seedAdmin(dataSource: DataSource) {
   console.log('Добавление Администратора...');
 
-  // Администратор
-  const adminPassword: string = 'Admin_404';
-
   const userRepository = dataSource.getRepository(User);
 
   // Поиск Администратора в БД
@@ -32,10 +29,9 @@ export async function seedAdmin(dataSource: DataSource) {
   }
 
   // Создание в БД Администратора
-  const hashedPassword = await hashPassword(adminPassword);
+  seedAdminData.password = await hashPassword(seedAdminData.password);
   const admin = userRepository.create({
     ...seedAdminData,
-    password: hashedPassword,
   });
   await userRepository.save(admin);
 
