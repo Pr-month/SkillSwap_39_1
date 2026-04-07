@@ -1,6 +1,8 @@
 import { DataSource } from 'typeorm';
 import { dbConfig } from '../config/db.config';
 import { seedUsers } from './user.seed';
+import { seedAdmin } from './admin.seed';
+import { seedSkills } from './skills.seed';
 
 export async function runAllSeeds() {
   console.log('Запуск сидинга');
@@ -12,6 +14,8 @@ export async function runAllSeeds() {
     console.log('Подключение к БД установлено');
 
     await seedUsers(dataSource);
+    await seedAdmin(dataSource);
+    await seedSkills(dataSource);
   } finally {
     // проверяем если initialize упадет
     if (dataSource.isInitialized) {
