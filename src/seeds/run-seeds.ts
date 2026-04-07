@@ -18,7 +18,6 @@ export async function runAllSeeds() {
     await seedCities(dataSource);
     await seedUsers(dataSource);
     await seedAdmin(dataSource);
-
   } finally {
     // проверяем если initialize упадет
     if (dataSource.isInitialized) {

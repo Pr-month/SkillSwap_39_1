@@ -19,7 +19,7 @@ import { Role } from '../common/enums/role.enum';
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
-  
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles([Role.ADMIN])
   @Post()

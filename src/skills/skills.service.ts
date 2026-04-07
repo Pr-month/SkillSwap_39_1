@@ -2,7 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  ConflictException
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Skill } from './entities/skill.entity';
@@ -162,9 +162,8 @@ export class SkillsService {
       },
     };
   }
-  
-  
-    async addToFavoriteSkill(skillId: string, userId: string) {
+
+  async addToFavoriteSkill(skillId: string, userId: string) {
     const skill = await this.skillRepository.findOne({
       where: { id: skillId },
     });

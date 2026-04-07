@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
@@ -18,7 +23,7 @@ export class RequestsService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Skill)
     private readonly skillsRepository: Repository<Skill>,
-  ) { }
+  ) {}
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -136,8 +141,6 @@ export class RequestsService {
       }
     }
 
-
-
     const request = this.requestsRepository.create({
       sender: { id: senderId },
       receiver: { id: receiverId },
@@ -191,9 +194,7 @@ export class RequestsService {
     const isSender = request.senderId === userId;
 
     if (!isAdmin && !isSender) {
-      throw new ForbiddenException(
-        'Удалить можно только отправленную заявку',
-      );
+      throw new ForbiddenException('Удалить можно только отправленную заявку');
     }
 
     await this.requestsRepository.delete(id);

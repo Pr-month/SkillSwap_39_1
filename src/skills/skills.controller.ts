@@ -8,7 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
-  Req
+  Req,
 } from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
@@ -49,12 +49,9 @@ export class SkillsController {
   ) {
     return this.skillsService.removeFromFavoriteSkill(skillId, req.user.sub);
   }
-  
+
   @Post(':id/favorite')
-  async addToFavorites(
-    @Param('id') skillId: string,
-    @Req() req: AuthRequest,
-  ) {
+  async addToFavorites(@Param('id') skillId: string, @Req() req: AuthRequest) {
     return this.skillsService.addToFavoriteSkill(skillId, req.user.sub);
   }
 }
