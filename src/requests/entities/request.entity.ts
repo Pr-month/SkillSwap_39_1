@@ -1,4 +1,4 @@
-import { RequestStatus } from 'src/common/enums/request-status.enum';
+import { RequestStatus } from '../../common/enums/request-status.enum';
 import { Skill } from '../../skills/entities/skill.entity';
 import { User } from '../../users/entities/user.entity';
 import {
