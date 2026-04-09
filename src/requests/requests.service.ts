@@ -1,15 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Request } from './request.entity';
+import { Request } from './entities/request.entity';
 import { RequestStatus } from '../common/enums/request-status.enum';
+import { Role } from 'src/common/enums/role.enum';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { Skill } from 'src/skills/entities/skill.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
-  ) { }
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    @InjectRepository(Skill)
+    private readonly skillsRepository: Repository<Skill>,
+  ) {}
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -96,6 +110,97 @@ export class RequestsService {
         total: totalRequest,
         totalPage: Math.ceil(totalRequest / 10),
       },
+    };
+  }
+
+  async create(senderId: string, dto: CreateRequestDto) {
+    const requestedSkill = await this.skillsRepository.findOne({
+      where: { id: dto.requestedSkillId },
+      relations: {
+        owner: true,
+      },
+    });
+
+    if (!requestedSkill) {
+      throw new NotFoundException('Запрашиваемый навык не найден');
+    }
+
+    const receiverId = requestedSkill.owner.id;
+
+    if (senderId === receiverId) {
+      throw new BadRequestException('Нельзя отправить заявку самому себе');
+    }
+
+    if (dto.offeredSkillId) {
+      const offeredSkill = await this.skillsRepository.findOne({
+        where: { id: dto.offeredSkillId },
+      });
+
+      if (!offeredSkill) {
+        throw new NotFoundException('Предлагаемый навык не найден');
+      }
+    }
+
+    const request = this.requestsRepository.create({
+      sender: { id: senderId },
+      receiver: { id: receiverId },
+      offeredSkill: { id: dto.offeredSkillId },
+      requestedSkill: { id: dto.requestedSkillId },
+    });
+
+    return await this.requestsRepository.save(request);
+  }
+
+  async update(id: string, userId: string, dto: UpdateRequestDto) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new ForbiddenException('Можно обновить только входящую заявку');
+    }
+
+    request.status = dto.status;
+
+    return await this.requestsRepository.save(request);
+  }
+
+  async remove(id: string, userId: string) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isAdmin = user.role === Role.ADMIN;
+    const isSender = request.senderId === userId;
+
+    if (!isAdmin && !isSender) {
+      throw new ForbiddenException('Удалить можно только отправленную заявку');
+    }
+
+    await this.requestsRepository.delete(id);
+
+    return {
+      message: 'Заявка успешно удалена',
     };
   }
 }
