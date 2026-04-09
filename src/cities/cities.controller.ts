@@ -44,6 +44,8 @@ export class CitiesController {
     return this.citiesService.update(id, updateCityDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles([Role.ADMIN])
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.citiesService.remove(id);
