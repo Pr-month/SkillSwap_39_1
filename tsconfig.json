@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -19,11 +18,12 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false,
-      "resolveJsonModule": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
       "src/*": [
         "src/*"
       ]
+    }
   }
 }
