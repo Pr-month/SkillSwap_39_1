@@ -8,11 +8,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
 import { RequestStatus } from '../common/enums/request-status.enum';
-import { Role } from 'src/common/enums/role.enum';
+import { Role } from '../common/enums/role.enum';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
-import { Skill } from 'src/skills/entities/skill.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Skill } from '../skills/entities/skill.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RequestsService {

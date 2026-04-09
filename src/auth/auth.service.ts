@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
-import { jwtConfig, TJwtConfig } from 'src/config/jwt.config';
+import { jwtConfig, TJwtConfig } from '../config/jwt.config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { StringValue } from 'ms';

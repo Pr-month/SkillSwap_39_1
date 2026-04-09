@@ -4,20 +4,53 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { hashPassword, verifyPassword } from './utils/password.util';
 import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { GetUsersQueryDto } from './dto/get-users-query.dto';
+import { Gender } from '../common/enums/gender.enum';
+import { Role } from '../common/enums/role.enum';
 
 type UsersRepositoryMock = {
   findOne: jest.Mock<Promise<User | null>, [unknown]>;
   save: jest.Mock<Promise<User>, [User]>;
+  count: jest.Mock<Promise<number>, []>;
+  find: jest.Mock<Promise<User[]>, [unknown]>;
+  update: jest.Mock<Promise<any>, [string, Partial<User>]>;
 };
 
 describe('UsersService', () => {
   let service: UsersService;
   let usersRepository: UsersRepositoryMock;
 
+  const mockUsers = [
+    {
+      id: '1',
+      name: 'test',
+      email: 'test@yand.ru',
+      about: 'test about',
+      city: 'city',
+      gender: Gender.FEMALE,
+      avatar: 'test.jpg',
+      role: Role.USER,
+    },
+    {
+      id: '2',
+      name: 'test2',
+      email: 'test2@yand.ru',
+      about: 'test about 2',
+      city: 'town',
+      gender: Gender.MALE,
+      avatar: 'test22.jpg',
+      role: Role.USER,
+    },
+  ] as User[];
+
   beforeEach(async () => {
     usersRepository = {
       findOne: jest.fn<Promise<User | null>, [unknown]>(),
       save: jest.fn<Promise<User>, [User]>(),
+      count: jest.fn<Promise<number>, []>(),
+      find: jest.fn<Promise<User[]>, [unknown]>(),
+      update: jest.fn<Promise<any>, [string, Partial<User>]>(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -37,73 +70,231 @@ describe('UsersService', () => {
     expect(service).toBeDefined();
   });
 
-  it('должен обновлять пароль и очищать refresh token', async () => {
-    const storedPassword = await hashPassword('old-password');
-    const user = {
-      id: 'user-id',
-      password: storedPassword,
-      refreshToken: 'refresh-token',
-    } as User;
+  it('проверка метода create', () => {
+    const createUser: CreateUserDto = { name: 'Test', email: 'test@yandex.ru' };
+    const expectRes = 'Создание пользователя';
 
-    usersRepository.findOne.mockResolvedValue(user);
-    usersRepository.save.mockImplementation((entity: User) =>
-      Promise.resolve(entity),
-    );
+    const result = service.create(createUser);
 
-    await expect(
-      service.updateMyPassword('user-id', {
-        currentPassword: 'old-password',
-        newPassword: 'new-password',
-      }),
-    ).resolves.toEqual({
-      message: 'Пароль успешно обновлен',
+    expect(result).toBe(expectRes);
+  });
+
+  describe('проверка метода findAll', () => {
+    const mockTotal = 20;
+
+    it('проверка успешного ответа', async () => {
+      usersRepository.count.mockResolvedValue(mockTotal);
+      usersRepository.find.mockResolvedValue(mockUsers);
+
+      const paginationData: GetUsersQueryDto = { page: 2, limit: 10 };
+      const expectedResMeta = {
+        page: paginationData.page,
+        limit: paginationData.limit,
+        skip: (paginationData.page - 1) * paginationData.limit,
+        take: paginationData.limit,
+        total: mockTotal,
+        totalPages: mockTotal / paginationData.limit,
+        hasNext: paginationData.page < mockTotal / paginationData.limit,
+        hasPrev: paginationData.page > 1,
+      };
+
+      const result = await service.findAll(paginationData);
+
+      expect(result.data).toEqual(mockUsers);
+      expect(result.meta).toEqual(expectedResMeta);
+
+      expect(usersRepository.find).toHaveBeenCalledWith({
+        skip: (paginationData.page - 1) * paginationData.limit,
+        take: paginationData.limit,
+        order: { name: 'ASC' },
+      });
     });
 
-    expect(user.refreshToken).toBeNull();
-    await expect(verifyPassword('new-password', user.password)).resolves.toBe(
-      true,
-    );
-    expect(usersRepository.save).toHaveBeenCalledWith(user);
+    it('проверка успешного ответа с параметрами пагинации по умолчанию', async () => {
+      usersRepository.count.mockResolvedValue(mockTotal);
+      usersRepository.find.mockResolvedValue(mockUsers);
+
+      const expectedResMeta = {
+        page: 1,
+        limit: 10,
+        skip: 0,
+        take: 10,
+        total: mockTotal,
+        totalPages: mockTotal / 10,
+        hasNext: 1 < mockTotal / 10,
+        hasPrev: false,
+      };
+
+      //В тесте параметры пагинации "по умолчанию" переданы явно, тк нет возможности вызвать метод без них
+      const result = await service.findAll({ page: 1, limit: 10 });
+
+      expect(result.data).toEqual(mockUsers);
+      expect(result.meta).toEqual(expectedResMeta);
+
+      expect(usersRepository.find).toHaveBeenCalledWith({
+        skip: 0,
+        take: 10,
+        order: { name: 'ASC' },
+      });
+    });
+
+    it('проверка ошибки при запросе несуществующей страницы', async () => {
+      usersRepository.count.mockResolvedValue(mockTotal);
+      usersRepository.find.mockResolvedValue(mockUsers);
+
+      const paginationData: GetUsersQueryDto = { page: 3, limit: 10 };
+
+      await expect(service.findAll(paginationData)).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(usersRepository.find).not.toHaveBeenCalled();
+    });
+
+    it('проверка ошибки при отсутствии записей в БД', async () => {
+      usersRepository.count.mockResolvedValue(0);
+      usersRepository.find.mockResolvedValue([]);
+
+      const result = await service.findAll({ page: 1, limit: 2 });
+
+      expect(result.data).toEqual([]);
+      expect(result.meta).toEqual({
+        page: 1,
+        limit: 2,
+        skip: 0,
+        take: 2,
+        total: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false,
+      });
+    });
   });
 
-  it('должен выбрасывать ошибку, если пользователь не найден', async () => {
-    usersRepository.findOne.mockResolvedValue(null);
+  describe('проверка метода findOne', () => {
+    it('проверка успешного ответа', async () => {
+      usersRepository.findOne.mockResolvedValue(mockUsers[0]);
 
-    await expect(
-      service.updateMyPassword('missing-user', {
-        currentPassword: 'old-password',
-        newPassword: 'new-password',
-      }),
-    ).rejects.toBeInstanceOf(NotFoundException);
+      const result = await service.findOne('1');
+
+      expect(result).toEqual(mockUsers[0]);
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
+    });
+
+    it('проверка ошибки при некорректном id', async () => {
+      await expect(service.findOne('  ')).rejects.toThrow(BadRequestException);
+
+      expect(usersRepository.findOne).not.toHaveBeenCalled();
+    });
+
+    it('проверка ошибки при поиске несуществующего пользователя', async () => {
+      usersRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.findOne('2')).rejects.toThrow(NotFoundException);
+    });
   });
 
-  it('должен выбрасывать ошибку, если текущий пароль указан неверно', async () => {
-    usersRepository.findOne.mockResolvedValue({
-      id: 'user-id',
-      password: await hashPassword('old-password'),
-      refreshToken: 'refresh-token',
-    } as User);
+  describe('проверка метода update', () => {
+    const mockUpdateUser = { name: 'updatedTest' };
 
-    await expect(
-      service.updateMyPassword('user-id', {
-        currentPassword: 'wrong-password',
-        newPassword: 'new-password',
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    it('проверка успешного обновления данных', async () => {
+      usersRepository.update.mockResolvedValue({ affected: 1 });
+      usersRepository.findOne.mockResolvedValue({
+        ...mockUsers[0],
+        name: mockUpdateUser.name,
+      });
+
+      const result = await service.update('1', mockUpdateUser);
+
+      expect(result).toEqual({ ...mockUsers[0], name: mockUpdateUser.name });
+      expect(usersRepository.update).toHaveBeenCalledWith('1', mockUpdateUser);
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { id: '1' },
+      });
+    });
+
+    it('проверка ошибки при попытке обновления несуществующего пользователя', async () => {
+      usersRepository.update.mockResolvedValue({ affected: 0 });
+
+      await expect(service.update('1', mockUpdateUser)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(usersRepository.findOne).not.toHaveBeenCalled();
+    });
   });
 
-  it('должен выбрасывать ошибку, если новый пароль совпадает с текущим', async () => {
-    usersRepository.findOne.mockResolvedValue({
-      id: 'user-id',
-      password: await hashPassword('same-password'),
-      refreshToken: 'refresh-token',
-    } as User);
+  // тесты блока уже были описаны при начале выполнения задачи 152
+  describe('проверка метода updateMyPassword', () => {
+    it('должен обновлять пароль и очищать refresh token', async () => {
+      const storedPassword = await hashPassword('old-password');
+      const user = {
+        id: 'user-id',
+        password: storedPassword,
+        refreshToken: 'refresh-token',
+      } as User;
 
-    await expect(
-      service.updateMyPassword('user-id', {
-        currentPassword: 'same-password',
-        newPassword: 'same-password',
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+      usersRepository.findOne.mockResolvedValue(user);
+      usersRepository.save.mockImplementation((entity: User) =>
+        Promise.resolve(entity),
+      );
+
+      await expect(
+        service.updateMyPassword('user-id', {
+          currentPassword: 'old-password',
+          newPassword: 'new-password',
+        }),
+      ).resolves.toEqual({
+        message: 'Пароль успешно обновлен',
+      });
+
+      expect(user.refreshToken).toBeNull();
+      await expect(verifyPassword('new-password', user.password)).resolves.toBe(
+        true,
+      );
+      expect(usersRepository.save).toHaveBeenCalledWith(user);
+    });
+
+    it('должен выбрасывать ошибку, если пользователь не найден', async () => {
+      usersRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.updateMyPassword('missing-user', {
+          currentPassword: 'old-password',
+          newPassword: 'new-password',
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('должен выбрасывать ошибку, если текущий пароль указан неверно', async () => {
+      usersRepository.findOne.mockResolvedValue({
+        id: 'user-id',
+        password: await hashPassword('old-password'),
+        refreshToken: 'refresh-token',
+      } as User);
+
+      await expect(
+        service.updateMyPassword('user-id', {
+          currentPassword: 'wrong-password',
+          newPassword: 'new-password',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('должен выбрасывать ошибку, если новый пароль совпадает с текущим', async () => {
+      usersRepository.findOne.mockResolvedValue({
+        id: 'user-id',
+        password: await hashPassword('same-password'),
+        refreshToken: 'refresh-token',
+      } as User);
+
+      await expect(
+        service.updateMyPassword('user-id', {
+          currentPassword: 'same-password',
+          newPassword: 'same-password',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 });

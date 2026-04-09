@@ -8,8 +8,8 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
-import { AuthRequest } from 'src/auth/types/types';
+import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
+import { AuthRequest } from '../auth/types/types';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUsersQueryDto } from './dto/get-users-query.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
