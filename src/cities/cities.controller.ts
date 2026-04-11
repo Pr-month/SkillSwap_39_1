@@ -6,10 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CitiesService } from './cities.service';
 import { CreateCityDto } from './dto/create-city.dto';
+import { GetCitiesQueryDto } from './dto/get-cities-query.dto';
 import { UpdateCityDto } from './dto/update-city.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -28,8 +30,8 @@ export class CitiesController {
   }
 
   @Get()
-  findAll() {
-    return this.citiesService.findAll();
+  findAll(@Query() query: GetCitiesQueryDto) {
+    return this.citiesService.findAll(query);
   }
 
   @Get(':id')
