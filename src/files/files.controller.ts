@@ -8,11 +8,14 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../config/multer.config';
 import { FilesService } from './files.service';
+import { ApiFilesController, ApiFilesUpload } from './files.swagger';
 
+@ApiFilesController()
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
+  @ApiFilesUpload()
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', multerOptions))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
