@@ -24,6 +24,7 @@ async function bootstrap() {
     .setTitle('SkillSwap API')
     .setDescription('Документация API проекта SkillSwap')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
