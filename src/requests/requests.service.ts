@@ -52,7 +52,7 @@ export class RequestsService {
         skip: (page - 1) * limit,
       });
 
-    if (!requestsIncomingData) {
+    if (requestsIncomingData.length === 0) {
       throw new NotFoundException(
         'Пользователь или исходящие заявки не найдены',
       );
@@ -64,7 +64,7 @@ export class RequestsService {
         page,
         limit,
         total: totalRequest,
-        totalPage: Math.ceil(totalRequest / 10),
+        totalPage: Math.ceil(totalRequest / limit),
       },
     };
   }
@@ -96,7 +96,7 @@ export class RequestsService {
         skip: (page - 1) * limit,
       });
 
-    if (!requestsIncomingData) {
+    if (requestsIncomingData.length === 0) {
       throw new NotFoundException(
         'Пользователь или входящие заявки не найдены',
       );
@@ -108,7 +108,7 @@ export class RequestsService {
         page,
         limit,
         total: totalRequest,
-        totalPage: Math.ceil(totalRequest / 10),
+        totalPage: Math.ceil(totalRequest / limit),
       },
     };
   }
