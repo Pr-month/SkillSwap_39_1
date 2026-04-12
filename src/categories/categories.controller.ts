@@ -15,11 +15,21 @@ import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../users/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
+import {
+  ApiCategoriesController,
+  ApiCategoriesCreate,
+  ApiCategoriesFindAll,
+  ApiCategoriesFindOne,
+  ApiCategoriesRemove,
+  ApiCategoriesUpdate,
+} from './categories.swagger';
 
+@ApiCategoriesController()
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @ApiCategoriesCreate()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles([Role.ADMIN])
   @Post()
@@ -27,16 +37,19 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @ApiCategoriesFindAll()
   @Get()
   findAll() {
     return this.categoriesService.findAll();
   }
 
+  @ApiCategoriesFindOne()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(id);
   }
 
+  @ApiCategoriesUpdate()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles([Role.ADMIN])
   @Patch(':id')
@@ -47,6 +60,7 @@ export class CategoriesController {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 
+  @ApiCategoriesRemove()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles([Role.ADMIN])
   @Delete(':id')
