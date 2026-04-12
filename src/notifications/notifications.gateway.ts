@@ -2,24 +2,35 @@ import {
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
-  OnGatewayDisconnect
+  OnGatewayDisconnect,
+  SubscribeMessage
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
-import { WsJwtGuard } from './ws-jwt-guard';
+import { WsJwtGuard } from '../auth/guards/ws-jwt-guard';
+import { NotificationPayloadDto } from './dto/notification-payload.dto';
+
+interface SocketWithUser extends Socket {
+  data: {
+    user?: { sub: string };
+    userId?: string;
+  };
+}
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-@UseGuards(WsJwtGuard)
+
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(client: Socket) {
+  constructor(private wsJwtGuard: WsJwtGuard) {}
+
+  async handleConnection(client: SocketWithUser) {
     try {
+      await this.wsJwtGuard.validateToken(client);
       const userId = client.data.user?.sub;
       
       if (!userId) {
@@ -36,7 +47,8 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       client.emit('connected', { message: 'Подключен к серверу уведомлений'});
       
     } catch (error) {
-      console.log(`Ошибка соединения пользователя ${client.id}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.log(`Ошибка соединения пользователя ${client.id}: ${errorMessage}`);
       client.disconnect();
     }
   }
@@ -48,21 +60,21 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     }
   }
 
-  async notifyUser(userId: string, payload: {
-    type: 'new_request' | 'request_accepted' | 'request_rejected';
-    skillTitle: string;
-    fromUser: {
-      id: string;
-      name: string;
-    };
-  }) {
+   @SubscribeMessage('connectToNotifications')
+  handleConnect(client: SocketWithUser) {
+    const userId = client.data.user?.sub;
+    if (userId) {
+      client.join(userId);
+    }
+  }
+  async notifyUser(userId: string, payload: NotificationPayloadDto) {
     this.server.to(userId).emit('notificateNewRequest', {
       ...payload,
       message: this.getNotificationMessage(payload),
     });
   }
 
-  private getNotificationMessage(payload: any): string {
+  private getNotificationMessage(payload: NotificationPayloadDto): string {
     switch (payload.type) {
       case 'new_request':
         return `Вам направили заявку на навык ${payload.skillTitle} от ${payload.fromUser.name}`;

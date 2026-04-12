@@ -6,6 +6,7 @@ import { RequestStatus } from '../common/enums/request-status.enum';
 import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { SkillsService } from 'src/skills/skills.service';
 import { UsersService } from 'src/users/users.service';
+import { NotificationPayloadDto } from 'src/notifications/dto/notification-payload.dto';
 
 @Injectable()
 export class RequestsService {
@@ -110,7 +111,6 @@ export class RequestsService {
     offeredSkillId: string,
     requestedSkillId: string,
   ) {
-    // Получаем информацию о навыках
     const offeredSkill = await this.skillsService.findOne(offeredSkillId);
     if (!offeredSkill) {
       throw new NotFoundException('Предлагаемый навык не найден');
@@ -142,14 +142,15 @@ export class RequestsService {
 
     const sender = await this.usersService.findOne(senderId);
 
-    await this.notificationsGateway.notifyUser(requestedSkill.owner.id, {
-      type: 'new_request',
-      skillTitle: requestedSkill.title,
-      fromUser: {
-        id: sender.id,
-        name: sender.name,
-      },
-    });
+    const notificationPayload: NotificationPayloadDto = {
+    type: 'new_request',
+    skillTitle: requestedSkill.title,
+    fromUser: {
+      id: sender.id,
+      name: sender.name,
+    },
+  };
+    await this.notificationsGateway.notifyUser(requestedSkill.owner.id, notificationPayload);
 
     return this.requestsRepository.findOne({
       where: { id: request.id },
@@ -179,14 +180,15 @@ export class RequestsService {
     request.status = RequestStatus.IN_PROGRESS;
     await this.requestsRepository.save(request);
 
-    await this.notificationsGateway.notifyUser(request.senderId, {
+    const notificationPayload: NotificationPayloadDto = {
       type: 'request_accepted',
       skillTitle: request.requestedSkill.title,
       fromUser: {
         id: request.receiver.id,
         name: request.receiver.name,
       },
-    });
+    };
+    await this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
 
     return this.requestsRepository.findOne({
         where: { id: requestId },
@@ -215,14 +217,16 @@ export class RequestsService {
       request.status = RequestStatus.REJECTED;
       await this.requestsRepository.save(request);
 
-      await this.notificationsGateway.notifyUser(request.senderId, {
+      const notificationPayload: NotificationPayloadDto = {
         type: 'request_rejected',
         skillTitle: request.requestedSkill.title,
         fromUser: {
           id: request.receiver.id,
           name: request.receiver.name,
         },
-      });
+      };
+
+      await this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
 
       return {
         message: 'Заявка успешно отклонена',
