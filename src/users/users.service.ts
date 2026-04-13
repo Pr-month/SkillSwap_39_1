@@ -11,12 +11,15 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { hashPassword, verifyPassword } from './utils/password.util';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
   ) {}
 
   create(createUserDto: CreateUserDto) {
@@ -77,11 +80,36 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const result = await this.usersRepository.update(id, updateUserDto);
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['wantToLearn'],
+    });
 
-    if (!result.affected) {
+    if (!user) {
       throw new NotFoundException('Пользователь не найден в базе данных');
     }
+
+    const { categoryId, birthdate, ...rest } = updateUserDto;
+
+    Object.assign(user, rest);
+
+    if (birthdate !== undefined) {
+      user.birthdate = birthdate ? new Date(birthdate) : null;
+    }
+
+    if (categoryId !== undefined) {
+      const category = await this.categoriesRepository.findOne({
+        where: { id: categoryId },
+      });
+
+      if (!category) {
+        throw new NotFoundException('Категория не найдена');
+      }
+
+      user.wantToLearn = [category];
+    }
+
+    await this.usersRepository.save(user);
 
     return this.findOne(id);
   }
