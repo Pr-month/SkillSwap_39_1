@@ -56,6 +56,28 @@ export class SkillsService {
     };
   }
 
+  async findSimilarUsers(skillId: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+      relations: ['category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.skills', 'skill')
+      .innerJoin('skill.category', 'category')
+      .where('category.id = :categoryId', { categoryId: skill.category.id })
+      .distinct(true)
+      .take(10)
+      .getMany();
+
+    return users;
+  }
+
   async findOne(id: string) {
     const skill = await this.skillRepository.findOne({
       where: { id },
