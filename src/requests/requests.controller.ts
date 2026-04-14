@@ -1,43 +1,66 @@
 import {
+  UseGuards,
   Controller,
-  DefaultValuePipe,
   Get,
-  ParseIntPipe,
-  Query,
   Req,
   Post,
   Body,
   Param,
   Patch,
   UseGuards
+  Query,
+  Patch,
+  Delete,
 } from '@nestjs/common';
-import { RequestsService } from './requests.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
 import { AuthRequest } from '../auth/types/types';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
+import { FindRequestsQueryDto } from './dto/find-requests-query.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { RequestsService } from './requests.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('requests')
 @UseGuards(JwtAuthGuard)
 export class RequestsController {
-  constructor(private readonly requestsService: RequestsService) { }
+  constructor(private readonly requestsService: RequestsService) {}
 
   @Get('outgoing')
-  findOutgoing(
-    @Req() req: AuthRequest,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number, //для пагинации через query-параметры при необходимости
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ) {
-    return this.requestsService.findOutgoing(req.user.sub, page, limit);
+  findOutgoing(@Req() req: AuthRequest, @Query() query: FindRequestsQueryDto) {
+    return this.requestsService.findOutgoing(
+      req.user.sub,
+      query.page ?? 1,
+      query.limit ?? 10,
+    );
   }
 
-
   @Get('incoming')
-  findIncoming(
+  findIncoming(@Req() req: AuthRequest, @Query() query: FindRequestsQueryDto) {
+    return this.requestsService.findIncoming(
+      req.user.sub,
+      query.page ?? 1,
+      query.limit ?? 10,
+    );
+  }
+
+  @Post()
+  create(@Req() req: AuthRequest, @Body() dto: CreateRequestDto) {
+    return this.requestsService.create(req.user.sub, dto);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
     @Req() req: AuthRequest,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number, //для пагинации через query-параметры при необходимости
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Body() dto: UpdateRequestDto,
   ) {
-    return this.requestsService.findIncoming(req.user.sub, page, limit);
+    return this.requestsService.update(id, req.user.sub, dto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.requestsService.remove(id, req.user.sub);
   }
 
   @Post()

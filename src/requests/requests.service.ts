@@ -1,4 +1,10 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException  } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
@@ -7,6 +13,11 @@ import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 import { SkillsService } from 'src/skills/skills.service';
 import { UsersService } from 'src/users/users.service';
 import { NotificationPayloadDto } from 'src/notifications/dto/notification-payload.dto';
+import { Role } from '../common/enums/role.enum';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
+import { Skill } from '../skills/entities/skill.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RequestsService {
@@ -16,7 +27,11 @@ export class RequestsService {
     private readonly notificationsGateway: NotificationsGateway,
     private readonly skillsService: SkillsService,
     private readonly usersService: UsersService,
-  ) { }
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    @InjectRepository(Skill)
+    private readonly skillsRepository: Repository<Skill>,
+  ) {}
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -45,7 +60,7 @@ export class RequestsService {
         skip: (page - 1) * limit,
       });
 
-    if (!requestsIncomingData) {
+    if (requestsIncomingData.length === 0) {
       throw new NotFoundException(
         'Пользователь или исходящие заявки не найдены',
       );
@@ -57,7 +72,7 @@ export class RequestsService {
         page,
         limit,
         total: totalRequest,
-        totalPage: Math.ceil(totalRequest / 10),
+        totalPage: Math.ceil(totalRequest / limit),
       },
     };
   }
@@ -89,7 +104,7 @@ export class RequestsService {
         skip: (page - 1) * limit,
       });
 
-    if (!requestsIncomingData) {
+    if (requestsIncomingData.length === 0) {
       throw new NotFoundException(
         'Пользователь или входящие заявки не найдены',
       );
@@ -101,48 +116,47 @@ export class RequestsService {
         page,
         limit,
         total: totalRequest,
-        totalPage: Math.ceil(totalRequest / 10),
+        totalPage: Math.ceil(totalRequest / limit),
       },
     };
   }
 
-  async createRequest(
-    senderId: string,
-    offeredSkillId: string,
-    requestedSkillId: string,
-  ) {
-    const offeredSkill = await this.skillsService.findOne(offeredSkillId);
-    if (!offeredSkill) {
-      throw new NotFoundException('Предлагаемый навык не найден');
-    }
+  async create(senderId: string, dto: CreateRequestDto) {
+    const requestedSkill = await this.skillsRepository.findOne({
+      where: { id: dto.requestedSkillId },
+      relations: {
+        owner: true,
+      },
+    });
 
-    const requestedSkill = await this.skillsService.findOne(requestedSkillId);
     if (!requestedSkill) {
       throw new NotFoundException('Запрашиваемый навык не найден');
     }
 
-    if (offeredSkill.owner.id !== senderId) {
-      throw new BadRequestException('Вы можете предлагать только свои навыки');
-    }
+    const receiverId = requestedSkill.owner.id;
 
-    if (offeredSkill.owner.id === requestedSkill.owner.id) {
+    if (senderId === receiverId) {
       throw new BadRequestException('Нельзя отправить заявку самому себе');
     }
 
+    if (dto.offeredSkillId) {
+      const offeredSkill = await this.skillsRepository.findOne({
+        where: { id: dto.offeredSkillId },
+      });
+
+      if (!offeredSkill) {
+        throw new NotFoundException('Предлагаемый навык не найден');
+      }
+    }
+
     const request = this.requestsRepository.create({
-      senderId: senderId,
-      receiverId: requestedSkill.owner.id,
-      offeredSkillId: offeredSkillId,
-      requestedSkillId: requestedSkillId,
-      status: RequestStatus.PENDING,
-      isRead: false,
+      sender: { id: senderId },
+      receiver: { id: receiverId },
+      offeredSkill: { id: dto.offeredSkillId },
+      requestedSkill: { id: dto.requestedSkillId },
     });
-
-    await this.requestsRepository.save(request);
-
-    const sender = await this.usersService.findOne(senderId);
-
-    const notificationPayload: NotificationPayloadDto = {
+    
+       const notificationPayload: NotificationPayloadDto = {
     type: 'new_request',
     skillTitle: requestedSkill.title,
     fromUser: {
@@ -152,17 +166,12 @@ export class RequestsService {
   };
     await this.notificationsGateway.notifyUser(requestedSkill.owner.id, notificationPayload);
 
-    return this.requestsRepository.findOne({
-      where: { id: request.id },
-      relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
-    });
+    return await this.requestsRepository.save(request);
   }
 
- 
-  async acceptRequest(requestId: string, userId: string) {
+  async update(id: string, userId: string, dto: UpdateRequestDto) {
     const request = await this.requestsRepository.findOne({
-      where: { id: requestId },
-      relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
+      where: { id },
     });
 
     if (!request) {
@@ -170,16 +179,12 @@ export class RequestsService {
     }
 
     if (request.receiverId !== userId) {
-      throw new BadRequestException('Вы можете принять только входящую заявку');
+      throw new ForbiddenException('Можно обновить только входящую заявку');
     }
 
-    if (request.status !== RequestStatus.PENDING) {
-      throw new BadRequestException('Заявка не в ожидании');
-    }
-
-    request.status = RequestStatus.IN_PROGRESS;
-    await this.requestsRepository.save(request);
-
+    request.status = dto.status;
+    
+    
     const notificationPayload: NotificationPayloadDto = {
       type: 'request_accepted',
       skillTitle: request.requestedSkill.title,
@@ -190,48 +195,41 @@ export class RequestsService {
     };
     await this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
 
-    return this.requestsRepository.findOne({
-        where: { id: requestId },
-        relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
-    });
+    return await this.requestsRepository.save(request);
   }
 
-    async rejectRequest(requestId: string, userId: string) {
-      const request = await this.requestsRepository.findOne({
-        where: { id: requestId },
-        relations: ['sender', 'receiver', 'offeredSkill', 'requestedSkill'],
-      });
+  async remove(id: string, userId: string) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
 
-      if (!request) {
-        throw new NotFoundException('Заявка не найдена');
-      }
-
-      if (request.receiverId !== userId) {
-        throw new BadRequestException('Вы можете отклонить только входящую заявку');
-      }
-
-      if (request.status !== RequestStatus.PENDING) {
-        throw new BadRequestException('Можно отклонить только заявку в статусе ожидания');
-      }
-
-      request.status = RequestStatus.REJECTED;
-      await this.requestsRepository.save(request);
-
-      const notificationPayload: NotificationPayloadDto = {
-        type: 'request_rejected',
-        skillTitle: request.requestedSkill.title,
-        fromUser: {
-          id: request.receiver.id,
-          name: request.receiver.name,
-        },
-      };
-
-      await this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
-
-      return {
-        message: 'Заявка успешно отклонена',
-        requestId: request.id,
-        status: request.status,
-      };
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
     }
+
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isAdmin = user.role === Role.ADMIN;
+    const isSender = request.senderId === userId;
+
+    if (!isAdmin && !isSender) {
+      throw new ForbiddenException('Удалить можно только отправленную заявку');
+    }
+
+    await this.requestsRepository.delete(id);
+
+    return {
+      message: 'Заявка успешно удалена',
+    };
+  }
 }
