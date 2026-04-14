@@ -1,29 +1,31 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
 import { RequestStatus } from '../common/enums/request-status.enum';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { SkillsService } from 'src/skills/skills.service';
+import { UsersService } from 'src/users/users.service';
+import { NotificationPayloadDto } from 'src/notifications/dto/notification-payload.dto';
 import { Role } from '../common/enums/role.enum';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Skill } from '../skills/entities/skill.entity';
 import { User } from '../users/entities/user.entity';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private readonly requestsRepository: Repository<Request>,
+    private readonly notificationsGateway: NotificationsGateway,
+    private readonly skillsService: SkillsService,
+    private readonly usersService: UsersService,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Skill)
     private readonly skillsRepository: Repository<Skill>,
-  ) {}
+  ) { }
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -140,6 +142,7 @@ export class RequestsService {
         throw new NotFoundException('Предлагаемый навык не найден');
       }
     }
+    const sender = await this.usersService.findOne(senderId);
 
     const request = this.requestsRepository.create({
       sender: { id: senderId },
@@ -147,6 +150,16 @@ export class RequestsService {
       offeredSkill: { id: dto.offeredSkillId },
       requestedSkill: { id: dto.requestedSkillId },
     });
+
+    const notificationPayload: NotificationPayloadDto = {
+      type: 'new_request',
+      skillTitle: requestedSkill.title,
+      fromUser: {
+        id: sender.id,
+        name: sender.name,
+      },
+    };
+    await this.notificationsGateway.notifyUser(requestedSkill.owner.id, notificationPayload);
 
     return await this.requestsRepository.save(request);
   }
@@ -165,6 +178,17 @@ export class RequestsService {
     }
 
     request.status = dto.status;
+
+
+    const notificationPayload: NotificationPayloadDto = {
+      type: 'request_accepted',
+      skillTitle: request.requestedSkill.title,
+      fromUser: {
+        id: request.receiver.id,
+        name: request.receiver.name,
+      },
+    };
+    await this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
 
     return await this.requestsRepository.save(request);
   }

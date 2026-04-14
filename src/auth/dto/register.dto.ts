@@ -14,7 +14,7 @@ import {
   IsOptional,
   IsUUID,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { Gender } from '../../common/enums/gender.enum';
 import { normalizeString } from '../../common/utils';
 
@@ -45,6 +45,7 @@ export class RegisterDto {
   @IsDate()
   @MinDate(new Date(1900, 0, 1))
   @MaxDate(() => new Date())
+  @Type(() => Date) 
   birthdate: Date;
 
   // Город

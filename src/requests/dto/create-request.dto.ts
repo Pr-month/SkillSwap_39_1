@@ -1,10 +1,11 @@
-import { IsOptional, IsUUID } from 'class-validator';
+import {IsUUID, IsNotEmpty } from 'class-validator';
 
 export class CreateRequestDto {
   @IsUUID()
-  requestedSkillId: string;
+  @IsNotEmpty()
+  offeredSkillId: string;
 
-  @IsOptional()
   @IsUUID()
-  offeredSkillId?: string;
+  @IsNotEmpty()
+  requestedSkillId: string;
 }

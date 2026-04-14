@@ -28,7 +28,8 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const hashedPassword = await this.hashData(registerDto.password);
+    try{
+      const hashedPassword = await this.hashData(registerDto.password);
 
     const category = await this.categoriesRepository.findOne({
       where: { id: registerDto.categoryId },
@@ -52,12 +53,20 @@ export class AuthService {
       wantToLearn: [category],
     });
 
-    const savedUser = await this.usersRepository.save(user);
+      const savedUser = await this.usersRepository.save(user);
 
-    const tokens = await this.generateTokens(savedUser.id, savedUser.email);
-    await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
+      const tokens = await this.generateTokens(savedUser.id, savedUser.email);
+      await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
 
-    return tokens;
+      return tokens;
+    }
+    catch (error) {
+        if (error.code === '23505') { 
+          throw new ConflictException('Пользователь с таким email уже существует');
+        }
+        throw error;
+      }
+
   }
 
   async login(loginDto: LoginDto) {
