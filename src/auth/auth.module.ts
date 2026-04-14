@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './guards/jwt-access.guard';
 import { JwtStrategy } from './strategies/jwt-access.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { User } from '../users/entities/user.entity';
+import { Category } from '../categories/entities/category.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { User } from '../users/entities/user.entity';
         signOptions: { expiresIn: config.expiresIn as StringValue },
       }),
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Category]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RefreshTokenStrategy],
