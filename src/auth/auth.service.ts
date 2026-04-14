@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
@@ -8,12 +13,15 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { StringValue } from 'ms';
 import { User } from '../users/entities/user.entity';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtSettings: TJwtConfig,
@@ -23,11 +31,27 @@ export class AuthService {
     try{
       const hashedPassword = await this.hashData(registerDto.password);
 
-      const user = this.usersRepository.create({
-        ...registerDto,
-        birthdate: registerDto.birthdate ? new Date(registerDto.birthdate) : null,
-        password: hashedPassword,
-      });
+    const category = await this.categoriesRepository.findOne({
+      where: { id: registerDto.categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Категория не найдена');
+    }
+
+    const user = this.usersRepository.create({
+      name: registerDto.name,
+      email: registerDto.email,
+      birthdate: registerDto.birthdate
+        ? new Date(registerDto.birthdate)
+        : null,
+      city: registerDto.city,
+      gender: registerDto.gender,
+      about: registerDto.about,
+      avatar: registerDto.avatar,
+      password: hashedPassword,
+      wantToLearn: [category],
+    });
 
       const savedUser = await this.usersRepository.save(user);
 

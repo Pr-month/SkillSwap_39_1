@@ -12,6 +12,7 @@ import {
   MinLength,
   MaxLength,
   IsOptional,
+  IsUUID,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { Gender } from '../../common/enums/gender.enum';
@@ -71,4 +72,8 @@ export class RegisterDto {
   @IsOptional()
   @MaxLength(255)
   avatar: string;
+
+  // Категория, которой пользователь хочет обучиться
+  @IsUUID()
+  categoryId: string;
 }
