@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill-dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class SkillsService {
@@ -54,6 +54,41 @@ export class SkillsService {
         hasPrev: page > 1,
       },
     };
+  }
+
+  async findSimilarUsers(skillId: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+      relations: ['category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.skills', 'skill')
+      .innerJoin('skill.category', 'category')
+      .where('category.id = :categoryId', { categoryId: skill.category.id })
+      .distinct(true)
+      .take(10)
+      .getMany();
+
+    return users;
+  }
+
+  async findOne(id: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id },
+      relations: ['owner', 'category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Навык не найден');
+    }
+
+    return skill;
   }
 
   async create(dto: CreateSkillDto) {

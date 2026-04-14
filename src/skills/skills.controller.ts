@@ -14,8 +14,8 @@ import { SkillsService } from './skills.service';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill-dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
-import { AuthRequest } from 'src/auth/types/types';
+import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
+import { AuthRequest } from '../auth/types/types';
 
 @Controller('skills')
 export class SkillsController {
@@ -24,6 +24,11 @@ export class SkillsController {
   @Get()
   findAll(@Query() query: GetSkillsQueryDto) {
     return this.skillsService.findAll(query);
+  }
+
+  @Get(':id/similar')
+  findSimilarUsers(@Param('id') id: string) {
+    return this.skillsService.findSimilarUsers(id);
   }
 
   @Post()

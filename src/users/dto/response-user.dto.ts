@@ -1,5 +1,5 @@
-import { Gender } from 'src/common/enums/gender.enum';
-import { Role } from 'src/common/enums/role.enum';
+import { Gender } from '../../common/enums/gender.enum';
+import { Role } from '../../common/enums/role.enum';
 
 export class ResponseUserDto {
   id: string;
