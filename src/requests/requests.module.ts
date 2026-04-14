@@ -6,7 +6,11 @@ import { RequestsController } from './requests.controller';
 import { RequestsService } from './requests.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Request, User, Skill])],
+  imports: [
+    TypeOrmModule.forFeature([Request, User, Skill]),
+            NotificationsModule,
+    SkillsModule,
+    UsersModule],
   controllers: [RequestsController],
   providers: [RequestsService],
 })

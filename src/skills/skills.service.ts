@@ -56,6 +56,19 @@ export class SkillsService {
     };
   }
 
+  async findOne(id: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id },
+      relations: ['owner', 'category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Навык не найден');
+    }
+
+    return skill;
+  }
+
   async create(dto: CreateSkillDto) {
     const skill = this.skillRepository.create({
       title: dto.title,
