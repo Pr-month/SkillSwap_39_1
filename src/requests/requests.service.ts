@@ -1,10 +1,3 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException  } from '@nestjs/common';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Request } from './entities/request.entity';
@@ -18,6 +11,7 @@ import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Skill } from '../skills/entities/skill.entity';
 import { User } from '../users/entities/user.entity';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class RequestsService {
@@ -31,7 +25,7 @@ export class RequestsService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Skill)
     private readonly skillsRepository: Repository<Skill>,
-  ) {}
+  ) { }
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -148,6 +142,7 @@ export class RequestsService {
         throw new NotFoundException('Предлагаемый навык не найден');
       }
     }
+    const sender = await this.usersService.findOne(senderId);
 
     const request = this.requestsRepository.create({
       sender: { id: senderId },
@@ -155,15 +150,15 @@ export class RequestsService {
       offeredSkill: { id: dto.offeredSkillId },
       requestedSkill: { id: dto.requestedSkillId },
     });
-    
-       const notificationPayload: NotificationPayloadDto = {
-    type: 'new_request',
-    skillTitle: requestedSkill.title,
-    fromUser: {
-      id: sender.id,
-      name: sender.name,
-    },
-  };
+
+    const notificationPayload: NotificationPayloadDto = {
+      type: 'new_request',
+      skillTitle: requestedSkill.title,
+      fromUser: {
+        id: sender.id,
+        name: sender.name,
+      },
+    };
     await this.notificationsGateway.notifyUser(requestedSkill.owner.id, notificationPayload);
 
     return await this.requestsRepository.save(request);
@@ -183,8 +178,8 @@ export class RequestsService {
     }
 
     request.status = dto.status;
-    
-    
+
+
     const notificationPayload: NotificationPayloadDto = {
       type: 'request_accepted',
       skillTitle: request.requestedSkill.title,

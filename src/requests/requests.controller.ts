@@ -7,15 +7,12 @@ import {
   Body,
   Param,
   Patch,
-  UseGuards
-  Query,
-  Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
 import { AuthRequest } from '../auth/types/types';
 import { CreateRequestDto } from './dto/create-request.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-access.guard';
 import { FindRequestsQueryDto } from './dto/find-requests-query.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { RequestsService } from './requests.service';
@@ -24,7 +21,7 @@ import { RequestsService } from './requests.service';
 @Controller('requests')
 @UseGuards(JwtAuthGuard)
 export class RequestsController {
-  constructor(private readonly requestsService: RequestsService) {}
+  constructor(private readonly requestsService: RequestsService) { }
 
   @Get('outgoing')
   findOutgoing(@Req() req: AuthRequest, @Query() query: FindRequestsQueryDto) {
@@ -68,26 +65,9 @@ export class RequestsController {
     @Req() req: AuthRequest,
     @Body() createRequestDto: CreateRequestDto,
   ) {
-    return this.requestsService.createRequest(
+    return this.requestsService.create(
       req.user.sub,
-      createRequestDto.offeredSkillId,
-      createRequestDto.requestedSkillId,
+      createRequestDto
     );
-  }
-
-  @Patch(':id/accept')
-  async acceptRequest(
-    @Param('id') id: string,
-    @Req() req: AuthRequest,
-  ) {
-    return this.requestsService.acceptRequest(id, req.user.sub);
-  }
-
-  @Patch(':id/reject')
-  async rejectRequest(
-    @Param('id') id: string,
-    @Req() req: AuthRequest,
-  ) {
-    return this.requestsService.rejectRequest(id, req.user.sub);
   }
 }
