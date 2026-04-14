@@ -21,18 +21,17 @@ interface SocketWithUser extends Socket {
     origin: '*',
   },
 })
-
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  constructor(private wsJwtGuard: WsJwtGuard) {}
+  constructor(private wsJwtGuard: WsJwtGuard) { }
 
   async handleConnection(client: SocketWithUser) {
     try {
       await this.wsJwtGuard.validateToken(client);
       const userId = client.data.user?.sub;
-      
+
       if (!userId) {
         console.log(`Пользователь ${client.id} не подключен: Не найден id пользователя`);
         client.disconnect();
@@ -40,12 +39,12 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       }
 
       client.data.userId = userId;
-      
+
       await client.join(userId);
-      
+
       console.log(`Пользователь ${userId} подключен к комнате`);
-      client.emit('connected', { message: 'Подключен к серверу уведомлений'});
-      
+      client.emit('connected', { message: 'Подключен к серверу уведомлений' });
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
       console.log(`Ошибка соединения пользователя ${client.id}: ${errorMessage}`);
@@ -60,7 +59,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     }
   }
 
-   @SubscribeMessage('connectToNotifications')
+  @SubscribeMessage('connectToNotifications')
   handleConnect(client: SocketWithUser) {
     const userId = client.data.user?.sub;
     if (userId) {
