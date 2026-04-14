@@ -28,7 +28,9 @@ const createUser = (overrides: Partial<User> = {}): User => ({
   ...overrides,
 });
 
-type UsersRepositoryMock = Partial<Record<keyof Repository<User>, jest.Mock>> & {
+type UsersRepositoryMock = Partial<
+  Record<keyof Repository<User>, jest.Mock>
+> & {
   create: jest.Mock;
   save: jest.Mock;
   findOne: jest.Mock;

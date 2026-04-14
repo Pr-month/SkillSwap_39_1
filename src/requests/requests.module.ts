@@ -13,9 +13,9 @@ import { UsersModule } from 'src/users/users.module';
     TypeOrmModule.forFeature([Request, User, Skill]),
     NotificationsModule,
     SkillsModule,
-    UsersModule
+    UsersModule,
   ],
   controllers: [RequestsController],
   providers: [RequestsService],
 })
-export class RequestsModule { }
+export class RequestsModule {}

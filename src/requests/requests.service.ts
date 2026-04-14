@@ -11,7 +11,12 @@ import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { Skill } from '../skills/entities/skill.entity';
 import { User } from '../users/entities/user.entity';
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 
 @Injectable()
 export class RequestsService {
@@ -25,7 +30,7 @@ export class RequestsService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Skill)
     private readonly skillsRepository: Repository<Skill>,
-  ) { }
+  ) {}
 
   async findOutgoing(userId: string, page: number = 1, limit: number = 10) {
     if (page < 1) {
@@ -159,7 +164,10 @@ export class RequestsService {
         name: sender.name,
       },
     };
-    await this.notificationsGateway.notifyUser(requestedSkill.owner.id, notificationPayload);
+    await this.notificationsGateway.notifyUser(
+      requestedSkill.owner.id,
+      notificationPayload,
+    );
 
     return await this.requestsRepository.save(request);
   }
@@ -179,7 +187,6 @@ export class RequestsService {
 
     request.status = dto.status;
 
-
     const notificationPayload: NotificationPayloadDto = {
       type: 'request_accepted',
       skillTitle: request.requestedSkill.title,
@@ -188,7 +195,10 @@ export class RequestsService {
         name: request.receiver.name,
       },
     };
-    await this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
+    await this.notificationsGateway.notifyUser(
+      request.senderId,
+      notificationPayload,
+    );
 
     return await this.requestsRepository.save(request);
   }

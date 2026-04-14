@@ -21,7 +21,7 @@ import { RequestsService } from './requests.service';
 @Controller('requests')
 @UseGuards(JwtAuthGuard)
 export class RequestsController {
-  constructor(private readonly requestsService: RequestsService) { }
+  constructor(private readonly requestsService: RequestsService) {}
 
   @Get('outgoing')
   findOutgoing(@Req() req: AuthRequest, @Query() query: FindRequestsQueryDto) {
@@ -65,9 +65,6 @@ export class RequestsController {
     @Req() req: AuthRequest,
     @Body() createRequestDto: CreateRequestDto,
   ) {
-    return this.requestsService.create(
-      req.user.sub,
-      createRequestDto
-    );
+    return this.requestsService.create(req.user.sub, createRequestDto);
   }
 }

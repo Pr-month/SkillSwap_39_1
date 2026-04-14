@@ -3,7 +3,7 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage
+  SubscribeMessage,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { WsJwtGuard } from '../auth/guards/ws-jwt-guard';
@@ -21,11 +21,13 @@ interface SocketWithUser extends Socket {
     origin: '*',
   },
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
-  constructor(private wsJwtGuard: WsJwtGuard) { }
+  constructor(private wsJwtGuard: WsJwtGuard) {}
 
   async handleConnection(client: SocketWithUser) {
     try {
@@ -33,7 +35,9 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       const userId = client.data.user?.sub;
 
       if (!userId) {
-        console.log(`Пользователь ${client.id} не подключен: Не найден id пользователя`);
+        console.log(
+          `Пользователь ${client.id} не подключен: Не найден id пользователя`,
+        );
         client.disconnect();
         return;
       }
@@ -44,10 +48,12 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 
       console.log(`Пользователь ${userId} подключен к комнате`);
       client.emit('connected', { message: 'Подключен к серверу уведомлений' });
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
-      console.log(`Ошибка соединения пользователя ${client.id}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Неизвестная ошибка';
+      console.log(
+        `Ошибка соединения пользователя ${client.id}: ${errorMessage}`,
+      );
       client.disconnect();
     }
   }

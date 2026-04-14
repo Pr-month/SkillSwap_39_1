@@ -144,9 +144,9 @@ describe('CategoriesService', () => {
     categoriesRepository.findOneBy.mockResolvedValue(null);
     categoriesRepository.save.mockResolvedValue(updatedCategory);
 
-    await expect(service.update('category-id', { name: 'Танцы' })).resolves.toEqual(
-      updatedCategory,
-    );
+    await expect(
+      service.update('category-id', { name: 'Танцы' }),
+    ).resolves.toEqual(updatedCategory);
 
     expect(categoriesRepository.findOne).toHaveBeenCalledWith({
       where: { id: 'category-id' },
@@ -163,9 +163,9 @@ describe('CategoriesService', () => {
   it('update должен выбрасывать NotFoundException, если категория не найдена', async () => {
     categoriesRepository.findOne.mockResolvedValue(null);
 
-    await expect(service.update('missing-id', { name: 'Танцы' })).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.update('missing-id', { name: 'Танцы' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('update должен выбрасывать BadRequestException, если категория назначает себя родителем', async () => {

@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClassSerializerInterceptor, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
@@ -14,15 +18,15 @@ describe('AuthController (e2e)', () => {
   let accessToken: string;
   let refreshToken: string;
 
-const userDto: RegisterDto ={
-  name: 'test',
-  email: 'test@mail.ru',
-  password: 'Test123!@#',
-  birthdate:new Date(2001, 1, 1),
-  gender: Gender.MALE,
-  about: 'about',
-  avatar: 'avatar'
-}
+  const userDto: RegisterDto = {
+    name: 'test',
+    email: 'test@mail.ru',
+    password: 'Test123!@#',
+    birthdate: new Date(2001, 1, 1),
+    gender: Gender.MALE,
+    about: 'about',
+    avatar: 'avatar',
+  };
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -31,8 +35,10 @@ const userDto: RegisterDto ={
 
     app = moduleFixture.createNestApplication();
     dataSource = moduleFixture.get(DataSource);
-    
-    app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
+    app.useGlobalInterceptors(
+      new ClassSerializerInterceptor(app.get(Reflector)),
+    );
     app.useGlobalPipes(
       new ValidationPipe({
         transform: true,
@@ -50,7 +56,7 @@ const userDto: RegisterDto ={
     await app.close();
   });
 
-   describe('POST /auth/register', () => {
+  describe('POST /auth/register', () => {
     it('Успешная регистрация', async () => {
       const res = await request(app.getHttpServer())
         .post('/auth/register')
@@ -65,9 +71,7 @@ const userDto: RegisterDto ={
     });
 
     it('Регистрация существующего пользователя. Статус 409', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(userDto);
+      await request(app.getHttpServer()).post('/auth/register').send(userDto);
 
       const res = await request(app.getHttpServer())
         .post('/auth/register')
@@ -82,7 +86,7 @@ const userDto: RegisterDto ={
       const invalidUser = {
         ...userDto,
         email: `invalid-pwd-@mail.ru`,
-        password: 'weak'
+        password: 'weak',
       };
 
       const res = await request(app.getHttpServer())
@@ -94,7 +98,7 @@ const userDto: RegisterDto ={
     it('Регистрация пользователя c невалидной почтой. Статус 400', async () => {
       const invalidUser = {
         ...userDto,
-        email: 'email'
+        email: 'email',
       };
 
       const res = await request(app.getHttpServer())
@@ -106,9 +110,7 @@ const userDto: RegisterDto ={
 
   describe('POST /auth/login', () => {
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(userDto);
+      await request(app.getHttpServer()).post('/auth/register').send(userDto);
     });
 
     it('Успешная аутентификация', async () => {
@@ -116,7 +118,7 @@ const userDto: RegisterDto ={
         .post('/auth/login')
         .send({
           email: userDto.email,
-          password: userDto.password
+          password: userDto.password,
         })
         .expect(200);
 
@@ -126,12 +128,12 @@ const userDto: RegisterDto ={
 
     it('Аутентификация с некорректным паролем', async () => {
       const res = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: userDto.email,
-        password: 'password'
-      })
-      .expect(401);
+        .post('/auth/login')
+        .send({
+          email: userDto.email,
+          password: 'password',
+        })
+        .expect(401);
       expect(res.body.message).toBe('Неверный email или пароль');
     });
 
@@ -140,7 +142,7 @@ const userDto: RegisterDto ={
         .post('/auth/login')
         .send({
           email: 'neEmail@mail.ru',
-          password: 'Test123!@#'
+          password: 'Test123!@#',
         })
         .expect(401);
 
@@ -159,7 +161,7 @@ const userDto: RegisterDto ={
         .post('/auth/login')
         .send({
           email: userDto.email,
-          password: userDto.password
+          password: userDto.password,
         })
         .expect(200);
 
@@ -177,9 +179,7 @@ const userDto: RegisterDto ={
     });
 
     it('Logout без токена', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/logout')
-        .expect(401);
+      await request(app.getHttpServer()).post('/auth/logout').expect(401);
     });
 
     it('Logout c невалидным токеном', async () => {
@@ -194,15 +194,13 @@ const userDto: RegisterDto ={
     let refreshToken: string;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send(userDto);
+      await request(app.getHttpServer()).post('/auth/register').send(userDto);
 
       const loginRes = await request(app.getHttpServer())
         .post('/auth/login')
         .send({
           email: userDto.email,
-          password: userDto.password
+          password: userDto.password,
         });
 
       refreshToken = loginRes.body.refreshToken;
@@ -220,9 +218,7 @@ const userDto: RegisterDto ={
     });
 
     it('Рефреш без токена', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/refresh')
-        .expect(401);
+      await request(app.getHttpServer()).post('/auth/refresh').expect(401);
     });
 
     it('Рефреш с невалидным токеном', async () => {

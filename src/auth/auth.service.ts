@@ -29,30 +29,30 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    try{
+    try {
       const hashedPassword = await this.hashData(registerDto.password);
 
-    const category = await this.categoriesRepository.findOne({
-      where: { id: registerDto.categoryId },
-    });
+      const category = await this.categoriesRepository.findOne({
+        where: { id: registerDto.categoryId },
+      });
 
-    if (!category) {
-      throw new NotFoundException('Категория не найдена');
-    }
+      if (!category) {
+        throw new NotFoundException('Категория не найдена');
+      }
 
-    const user = this.usersRepository.create({
-      name: registerDto.name,
-      email: registerDto.email,
-      birthdate: registerDto.birthdate
-        ? new Date(registerDto.birthdate)
-        : null,
-      city: registerDto.city,
-      gender: registerDto.gender,
-      about: registerDto.about,
-      avatar: registerDto.avatar,
-      password: hashedPassword,
-      wantToLearn: [category],
-    });
+      const user = this.usersRepository.create({
+        name: registerDto.name,
+        email: registerDto.email,
+        birthdate: registerDto.birthdate
+          ? new Date(registerDto.birthdate)
+          : null,
+        city: registerDto.city,
+        gender: registerDto.gender,
+        about: registerDto.about,
+        avatar: registerDto.avatar,
+        password: hashedPassword,
+        wantToLearn: [category],
+      });
 
       const savedUser = await this.usersRepository.save(user);
 
@@ -60,14 +60,14 @@ export class AuthService {
       await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
 
       return tokens;
-    }
-    catch (error) {
-        if (error.code === '23505') { 
-          throw new ConflictException('Пользователь с таким email уже существует');
-        }
-        throw error;
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(
+          'Пользователь с таким email уже существует',
+        );
       }
-
+      throw error;
+    }
   }
 
   async login(loginDto: LoginDto) {

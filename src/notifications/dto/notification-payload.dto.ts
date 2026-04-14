@@ -5,4 +5,4 @@ export class NotificationPayloadDto {
     id: string;
     name: string;
   };
-};
+}

@@ -5,7 +5,12 @@ import { WsJwtGuard } from '../auth/guards/ws-jwt-guard';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({
-  providers: [NotificationsGateway, NotificationsService, WsJwtGuard, JwtService],
+  providers: [
+    NotificationsGateway,
+    NotificationsService,
+    WsJwtGuard,
+    JwtService,
+  ],
   exports: [NotificationsGateway],
 })
 export class NotificationsModule {}
