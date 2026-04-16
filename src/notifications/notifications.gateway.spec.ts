@@ -29,7 +29,16 @@ describe('NotificationsGateway', () => {
   });
 
   it('handleConnection должен подключать пользователя к его комнате и отправлять событие connected', async () => {
-    const client = {
+    const client: {
+      id: string;
+      data: {
+        user?: { sub: string };
+        userId?: string;
+      };
+      join: jest.Mock;
+      emit: jest.Mock;
+      disconnect: jest.Mock;
+    } = {
       id: 'socket-id',
       data: {
         user: {
@@ -55,7 +64,16 @@ describe('NotificationsGateway', () => {
   });
 
   it('handleConnection должен отключать клиента, если после валидации токена не найден userId', async () => {
-    const client = {
+    const client: {
+      id: string;
+      data: {
+        user?: { sub: string };
+        userId?: string;
+      };
+      join: jest.Mock;
+      emit: jest.Mock;
+      disconnect: jest.Mock;
+    } = {
       id: 'socket-id',
       data: {},
       join: jest.fn(),
@@ -73,7 +91,16 @@ describe('NotificationsGateway', () => {
   });
 
   it('handleConnection должен отключать клиента при ошибке валидации токена', async () => {
-    const client = {
+    const client: {
+      id: string;
+      data: {
+        user?: { sub: string };
+        userId?: string;
+      };
+      join: jest.Mock;
+      emit: jest.Mock;
+      disconnect: jest.Mock;
+    } = {
       id: 'socket-id',
       data: {},
       join: jest.fn(),
@@ -91,7 +118,13 @@ describe('NotificationsGateway', () => {
   });
 
   it('handleConnect должен добавлять пользователя в комнату', () => {
-    const client = {
+    const client: {
+      data: {
+        user?: { sub: string };
+        userId?: string;
+      };
+      join: jest.Mock;
+    } = {
       data: {
         user: {
           sub: 'user-id',
@@ -106,9 +139,11 @@ describe('NotificationsGateway', () => {
   });
 
   it('notifyUser должен отправлять уведомление о новой заявке', async () => {
+    const emit = jest.fn();
+
     gateway.server = {
       to: jest.fn().mockReturnValue({
-        emit: jest.fn(),
+        emit,
       }),
     } as any;
 
@@ -122,17 +157,14 @@ describe('NotificationsGateway', () => {
     });
 
     expect(gateway.server.to).toHaveBeenCalledWith('user-id');
-    expect(gateway.server.to('user-id').emit).toHaveBeenCalledWith(
-      'notificateNewRequest',
-      {
-        type: 'new_request',
-        skillTitle: 'NestJS',
-        fromUser: {
-          id: 'sender-id',
-          name: 'Иван',
-        },
-        message: 'Вам направили заявку на навык NestJS от Иван',
+    expect(emit).toHaveBeenCalledWith('notificateNewRequest', {
+      type: 'new_request',
+      skillTitle: 'NestJS',
+      fromUser: {
+        id: 'sender-id',
+        name: 'Иван',
       },
-    );
+      message: 'Вам направили заявку на навык NestJS от Иван',
+    });
   });
 });
