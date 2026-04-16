@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUsersQueryDto } from './dto/get-users-query.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -28,12 +28,18 @@ export class UsersService {
   }
 
   async findAll(queryDto: GetUsersQueryDto) {
-    const { page = 1, limit = 10 } = queryDto;
+    const { page = 1, limit = 10, city, gender, name } = queryDto;
 
     const skip = (page - 1) * limit;
     const take = limit;
 
-    const total = await this.usersRepository.count();
+    const where = {
+      ...(city ? { city: ILike(`%${city}%`) } : {}),
+      ...(gender ? { gender } : {}),
+      ...(name ? { name: ILike(`%${name}%`) } : {}),
+    };
+
+    const total = await this.usersRepository.count({ where });
     const totalPages = Math.ceil(total / limit);
 
     if (total > 0 && page > totalPages) {
@@ -41,6 +47,7 @@ export class UsersService {
     }
 
     const users = await this.usersRepository.find({
+      where,
       skip,
       take,
       order: {
