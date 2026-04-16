@@ -106,7 +106,6 @@ export class UsersService {
 
     if (categoryId !== undefined) {
       const category = await this.categoriesRepository.findOne({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         where: { id: categoryId },
       });
 
