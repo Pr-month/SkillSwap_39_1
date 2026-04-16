@@ -11,7 +11,6 @@ import { Reflector } from '@nestjs/core';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import * as http from 'http';
-import * as bcrypt from 'bcrypt';
 import { AppModule } from 'src/app.module';
 import { AllExceptionFilter } from 'src/common/filters/all-exception.filter';
 
@@ -26,7 +25,7 @@ interface responseLogin {
 interface responseCategory {
   id: string;
   name: string;
-  parentId: responseCategory | null;
+  parent: responseCategory | null;
   children: responseCategory[];
 }
 
@@ -68,9 +67,9 @@ describe('Тест e2e контроллера категорий', () => {
       .post('/auth/login')
       .send({
         email: seedUsersData[0].email,
-        password: await bcrypt.hash('123456', 10),
+        password: '123456',
       })
-      .expect(201);
+      .expect(200);
 
     accessToken = (responseUser.body as responseLogin).accessToken;
     expect(accessToken).toBeDefined();
@@ -81,9 +80,9 @@ describe('Тест e2e контроллера категорий', () => {
       .post('/auth/login')
       .send({
         email: seedAdminData.email,
-        password: await bcrypt.hash(seedAdminData.password, 10),
+        password: seedAdminData.password,
       })
-      .expect(201);
+      .expect(200);
 
     accessTokenAdmin = (responseAdmin.body as responseLogin).accessToken;
 
