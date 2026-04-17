@@ -56,7 +56,7 @@ describe('Тест e2e для файлов', () => {
     it('Загрузка изображения', async () => {
       const response = await request(server)
         .post('/files/upload')
-        .attach('image', path.resolve(__dirname, 'test_file', 'test.png'))
+        .attach('file', path.resolve(__dirname, 'test_file', 'test.png'))
         .expect(201);
 
       expect(typeof response.text).toBe('string');
@@ -66,7 +66,7 @@ describe('Тест e2e для файлов', () => {
     it('Загрузка тестового файла. Ответ 400', async () => {
       await request(server)
         .post('/files/upload')
-        .attach('image', path.resolve(__dirname, 'test_file', 'test.txt'))
+        .attach('file', path.resolve(__dirname, 'test_file', 'test.txt'))
         .expect(400);
     });
   });
