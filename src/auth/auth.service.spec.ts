@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { jwtConfig, TJwtConfig } from 'src/config/jwt.config';
 import { User } from 'src/users/entities/user.entity';
+import { Category } from 'src/categories/entities/category.entity';
 import { Role } from 'src/common/enums/role.enum';
 
 const createUser = (overrides: Partial<User> = {}): User => ({
@@ -37,9 +38,16 @@ type UsersRepositoryMock = Partial<
   update: jest.Mock;
 };
 
+type CategoryRepositoryMock = Partial<
+  Record<keyof Repository<Category>, jest.Mock>
+> & {
+  findOne: jest.Mock;
+};
+
 describe('AuthService', () => {
   let service: AuthService;
   let usersRepository: UsersRepositoryMock;
+  let categoryRepository: CategoryRepositoryMock;
   let jwtService: { signAsync: jest.Mock };
 
   const jwtSettings: TJwtConfig = {
@@ -57,6 +65,10 @@ describe('AuthService', () => {
       update: jest.fn(),
     };
 
+    categoryRepository = {
+      findOne: jest.fn(),
+    };
+
     jwtService = {
       signAsync: jest.fn(),
     };
@@ -67,6 +79,10 @@ describe('AuthService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: usersRepository,
+        },
+        {
+          provide: getRepositoryToken(Category),
+          useValue: categoryRepository,
         },
         {
           provide: JwtService,
@@ -99,19 +115,28 @@ describe('AuthService', () => {
       about: '',
       avatar: '',
       gender: undefined as never,
+      categoryId: 'category-id',
     };
+
+    const category = {
+      id: 'category-id',
+      name: 'Programming',
+    } as Category;
 
     const createdUser = createUser({
       email: dto.email,
       password: 'hashed-password',
       birthdate: dto.birthdate,
     });
+
     const savedUser = createUser({
       id: 'new-user-id',
       email: dto.email,
       password: 'hashed-password',
       birthdate: dto.birthdate,
     });
+
+    categoryRepository.findOne.mockResolvedValue(category);
 
     jest
       .spyOn(service as any, 'hashData')
@@ -130,12 +155,19 @@ describe('AuthService', () => {
       refreshToken: 'refresh-token',
     });
 
+    expect(categoryRepository.findOne).toHaveBeenCalledWith({
+      where: { id: dto.categoryId },
+    });
+
     expect(usersRepository.create).toHaveBeenCalledWith({
       ...dto,
       birthdate: dto.birthdate,
       password: 'hashed-password',
+      category,
     });
+
     expect(usersRepository.save).toHaveBeenCalledWith(createdUser);
+
     expect(jwtService.signAsync).toHaveBeenNthCalledWith(
       1,
       { sub: 'new-user-id', email: dto.email },
@@ -144,6 +176,7 @@ describe('AuthService', () => {
         expiresIn: jwtSettings.expiresIn,
       },
     );
+
     expect(jwtService.signAsync).toHaveBeenNthCalledWith(
       2,
       { sub: 'new-user-id', email: dto.email },
@@ -152,6 +185,7 @@ describe('AuthService', () => {
         expiresIn: jwtSettings.refreshExpiresIn,
       },
     );
+
     expect(usersRepository.update).toHaveBeenCalledWith('new-user-id', {
       refreshToken: 'hashed-refresh-token',
     });
@@ -184,10 +218,7 @@ describe('AuthService', () => {
     const user = createUser();
 
     usersRepository.findOne.mockResolvedValue(user);
-    jest
-      .spyOn(service as any, 'verifyData')
-      .mockResolvedValueOnce(true)
-      .mockResolvedValueOnce(true);
+    jest.spyOn(service as any, 'verifyData').mockResolvedValue(true);
     jest
       .spyOn(service as any, 'hashData')
       .mockResolvedValue('hashed-refresh-token');
@@ -209,6 +240,7 @@ describe('AuthService', () => {
     expect(usersRepository.findOne).toHaveBeenCalledWith({
       where: { email: user.email },
     });
+
     expect(usersRepository.update).toHaveBeenCalledWith(user.id, {
       refreshToken: 'hashed-refresh-token',
     });
@@ -241,10 +273,7 @@ describe('AuthService', () => {
     usersRepository.findOne.mockResolvedValue(
       createUser({ refreshToken: 'stored-refresh-token' }),
     );
-    jest
-      .spyOn(service as any, 'verifyData')
-      .mockResolvedValueOnce(true)
-      .mockResolvedValueOnce(true);
+    jest.spyOn(service as any, 'verifyData').mockResolvedValue(true);
     jest
       .spyOn(service as any, 'hashData')
       .mockResolvedValue('hashed-refresh-token');
@@ -267,6 +296,7 @@ describe('AuthService', () => {
     expect(usersRepository.findOne).toHaveBeenCalledWith({
       where: { id: 'user-id' },
     });
+
     expect(usersRepository.update).toHaveBeenCalledWith('user-id', {
       refreshToken: 'hashed-refresh-token',
     });
