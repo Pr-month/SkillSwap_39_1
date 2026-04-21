@@ -1,0 +1,45 @@
+.profileAvatarBlock {
+  position: absolute;
+  right: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profileAvatar {
+  width: 244px;
+  height: 244px;
+  border-radius: 50%;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url('@/app/assets/static/images/authUserProfileImages/user.jpg');
+  background-position: center;
+}
+.profileEditPhotoBtn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-radius: 100px;
+  background: #deebc5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  padding: 16px;
+}
+.profileGalleryEdit {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-color: var(--text, #253017);
+  mask-image: url('@/app/assets/static/images/icons/gallery-edit.svg');
+  mask-repeat: no-repeat;
+  mask-size: cover;
+}
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+}

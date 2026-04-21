@@ -1,0 +1,186 @@
+/* stylelint-disable alpha-value-notation */
+/* stylelint-disable color-function-notation */
+/* stylelint-disable property-no-vendor-prefix */
+.userPanel {
+  position: relative;
+}
+
+.iconsContainer {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  max-height: 48px;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 10px 4px;
+  cursor: pointer;
+}
+
+.iconWrapper:hover {
+  background-color: var(--button-primary-hover-color);
+  border-radius: 10px;
+}
+
+.notificationIcon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-color: #253017;
+  mask: url('../../../../app/assets/static/images/icons/notification.svg') no-repeat center;
+  -webkit-mask: url('../../../../app/assets/static/images/icons/notification.svg') no-repeat center;
+}
+
+.likeIcon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-color: #253017;
+  mask: url('../../../../app/assets/static/images/icons/like.svg') no-repeat center;
+  -webkit-mask: url('../../../../app/assets/static/images/icons/like.svg') no-repeat center;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  border: 1px solid white;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+  max-height: 48px;
+}
+
+.userInfo:hover {
+  background-color: var(--button-primary-hover-color);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #4a6b22;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userName {
+  font-size: 16px;
+  font-weight: 500;
+  color: #253017;
+  white-space: nowrap;
+}
+
+.modalMenu {
+  position: fixed;
+  width: 260px;
+  height: 120px;
+  top: 96px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 16px 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Добавляем кастомный скролл */
+.modalMenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalMenu::-webkit-scrollbar-thumb {
+  background-color: #4a6b22;
+  border-radius: 3px;
+}
+
+.modalMenu::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 3px;
+}
+
+.menuItemLk {
+  display: flex;
+  padding: 18px 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #253017;
+  transition: background-color 0.2s;
+}
+
+.menuItemOut {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  padding: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #253017;
+  transition: background-color 0.2s;
+}
+
+.logoutIcon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #253017;
+  mask: url('../../../../app/assets/static/images/icons/logout.svg') no-repeat center;
+  -webkit-mask: url('../../../../app/assets/static/images/icons/logout.svg') no-repeat center;
+}
+
+.menuItemOut:hover,
+.menuItemLk:hover {
+  background-color: var(--button-primary-hover-color);
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+  .iconsContainer {
+    gap: 20px;
+  }
+
+  .modalMenu {
+    top: 60px;
+    right: 10px;
+  }
+}

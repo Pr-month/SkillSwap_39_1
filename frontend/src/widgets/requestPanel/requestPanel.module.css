@@ -1,0 +1,127 @@
+/* stylelint-disable font-family-name-quotes */
+/* stylelint-disable declaration-block-no-duplicate-properties */
+/* stylelint-disable property-no-vendor-prefix */
+/* stylelint-disable no-descending-specificity */
+
+.sidePanel {
+  position: sticky;
+  margin-top: -16px;
+  top: 130px;
+  width: 328px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  z-index: 90;
+  overflow-y: auto;
+}
+
+.requestCard {
+  background: var(--button-primary-hover-color);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 328px;
+  width: 100%;
+  height: 68px;
+  overflow: hidden;
+}
+
+.cardContent {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.requestTextContainer {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  background-color: var(--button-secondary-content-color);
+  mask: url('@/app/assets/static/images/icons/idea.svg') no-repeat center;
+  -webkit-mask: url('@/app/assets/static/images/icons/idea.svg') no-repeat center;
+  flex-shrink: 0;
+}
+
+.requestText {
+  color: var(--text-primary-color);
+  flex-grow: 1;
+  padding-right: 30px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+  font-family: 'Jost', sans-serif;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.closeIcon {
+  width: 16px;
+  height: 16px;
+  background-color: var(--button-secondary-content-color);
+  mask: url('@/app/assets/static/images/icons/cross.svg') no-repeat center;
+  -webkit-mask: url('@/app/assets/static/images/icons/cross.svg') no-repeat center;
+}
+
+.goBtn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgb(255 255 255);
+  border-radius: 20px;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.requestCard:hover .goBtn {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .sidePanel {
+    width: 100%;
+    margin-left: 0;
+    top: 390px;
+    padding: 0 16px;
+    box-sizing: border-box;
+  }
+
+  .requestCard {
+    width: 100%;
+  }
+}

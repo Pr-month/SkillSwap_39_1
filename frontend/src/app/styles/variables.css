@@ -1,0 +1,74 @@
+:root {
+  /* Color Scheme */
+  --button-primary-color: #abd27a;
+  --button-primary-hover-color: #deebc5;
+  --button-primary-pressed-color: #508826;
+  --button-disabled: #e4e8df;
+  --button-secondary-color: #fff;
+  --button-secondary-border-color: #abd27a;
+  --button-secondary-hover-border-color: #deebc5;
+  --button-secondary-pressed-border-color: #508826;
+  --button-secondary-disabled-border-color: #e4e8df;
+  --button-tertiary-color: #fff;
+  --button-primary-content-color: #253017;
+  --button-primary-content-pressed-color: #fff;
+  --button-primary-content-disabled-color: #69735d;
+  --button-secondary-content-color: #253017;
+  --button-secondary-content-hover-color: #69735d;
+  --button-secondary-content-pressed-color: #253017;
+  --button-secondary-content-disabled-color: #9ca197;
+  --button-tertiary-content-color: #253017;
+  --skill-component-bg-business: #eee7f7;
+  --skill-component-bg-creativity: #f7e7f2;
+  --skill-component-bg-languages: #ebe5c5;
+  --skill-component-bg-development: #e7f2f6;
+  --skill-component-bg-home: #f7ebe5;
+  --skill-component-bg-health: #e9f7e7;
+  --bg-color: #f9faf7;
+  --text-color: #000;
+  --link-color: #1a73e8;
+  --skill-component-bg-more: #e8ecf7;
+  --user-card-container-bg: #fff;
+  --user-card-like-active-hover: #abd27a;
+  --button-quaternary-border-color: #69735d;
+  --divider-bg: #e4e8df;
+
+  /* Font */
+  --button-font-size: 16px;
+  --button-font-weight: 400;
+  --skill-component-font-size: 12px;
+  --skill-component-font-weight: 400;
+  --user-card-name-font-size: 20px;
+  --user-card-name-font-family: 'Open Sans', arial, sans-serif;
+  --user-card-name-font-weight: 600;
+  --user-card-name-line-height: 24px;
+  --user-card-font-family: roboto, arial, sans-serif;
+  --user-card-city-and-age-font-size: 12px;
+  --user-card-city-and-age-weight: 400;
+  --user-card-point-font-weight: 500;
+
+  /* Layout */
+  --skill-component-border-radius: 20px;
+  --skill-component-padding: 8px 12px;
+  --button-border-radius: 12px;
+  --user-card-container-border-radius: 12px;
+
+  /* z-index */
+  --z-index-overlay: 100;
+  --z-index-modal: 101;
+
+  /* Color */
+  --color-text: #253017;
+  --color-caption: #69735d;
+  --color-disabled-text: #9ca197;
+  --color-toggle: #b2b9a9;
+  --color-disabled: #e4e8df;
+  --color-card: #fff;
+  --color-input: #fff;
+  --color-text-link: #508826;
+  --color-accent: #abd27a;
+  --color-button-hover: #deebc5;
+  --color-background: #f9faf7;
+  --color-alarm: #e0796e;
+  --color-error: #bf3920;
+}

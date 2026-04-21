@@ -1,0 +1,57 @@
+@import url('../../app/styles/variables.css');
+
+.container {
+  /* width: 100%; */
+  height: max-content;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: var(--card-input, #fff);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block-end: 40px;
+}
+
+.resetButton {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--textlink-button-pressed, #508826);
+  cursor: pointer;
+  line-height: inherit;
+  padding-inline-start: 0;
+  padding-inline-end: 28px;
+  padding-block-start: 0;
+  padding-block-end: 0;
+}
+
+.resetButton::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  mask-image: url('../../app/assets/static/images/icons/cross.svg');
+  mask-repeat: no-repeat;
+  background-color: currentcolor;
+}
+
+.title {
+  margin: 0;
+  line-height: 28px;
+  color: var(--text, #253017);
+  font-weight: 500;
+  font-size: 24px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: flex-start;
+}
