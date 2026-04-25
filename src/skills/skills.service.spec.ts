@@ -14,8 +14,17 @@ import { Role } from '../common/enums/role.enum';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill-dto';
 
+type QueryBuilderMock = {
+  leftJoinAndSelect: jest.Mock<QueryBuilderMock, [string, string]>;
+  orderBy: jest.Mock<QueryBuilderMock, [string, string]>;
+  skip: jest.Mock<QueryBuilderMock, [number]>;
+  take: jest.Mock<QueryBuilderMock, [number]>;
+  andWhere: jest.Mock<QueryBuilderMock, [unknown, unknown?]>;
+  getManyAndCount: jest.Mock<Promise<[Skill[], number]>, []>;
+};
+
 type SkillsRepositoryMock = {
-  findAndCount: jest.Mock<Promise<[Skill[], number]>, [unknown]>;
+  createQueryBuilder: jest.Mock<QueryBuilderMock, [string]>;
   create: jest.Mock<Skill, [Partial<Skill>]>;
   save: jest.Mock<Promise<Skill>, [Skill]>;
   findOne: jest.Mock<Promise<Skill | null>, [unknown]>;
@@ -31,6 +40,7 @@ describe('SkillsService', () => {
   let service: SkillsService;
   let skillsRepository: SkillsRepositoryMock;
   let usersRepository: UsersRepositoryMock;
+  let queryBuilder: QueryBuilderMock;
 
   const mockSkills = [
     {
@@ -62,13 +72,28 @@ describe('SkillsService', () => {
   } as User;
 
   beforeEach(async () => {
+    queryBuilder = {
+      leftJoinAndSelect: jest.fn(),
+      orderBy: jest.fn(),
+      skip: jest.fn(),
+      take: jest.fn(),
+      andWhere: jest.fn(),
+      getManyAndCount: jest.fn(),
+    };
+    queryBuilder.leftJoinAndSelect.mockReturnValue(queryBuilder);
+    queryBuilder.orderBy.mockReturnValue(queryBuilder);
+    queryBuilder.skip.mockReturnValue(queryBuilder);
+    queryBuilder.take.mockReturnValue(queryBuilder);
+    queryBuilder.andWhere.mockReturnValue(queryBuilder);
+
     skillsRepository = {
-      findAndCount: jest.fn<Promise<[Skill[], number]>, [unknown]>(),
+      createQueryBuilder: jest.fn<QueryBuilderMock, [string]>(),
       create: jest.fn<Skill, [Partial<Skill>]>(),
       save: jest.fn<Promise<Skill>, [Skill]>(),
       findOne: jest.fn<Promise<Skill | null>, [unknown]>(),
       delete: jest.fn<Promise<any>, [string | string[]]>(),
     };
+    skillsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
     usersRepository = {
       findOne: jest.fn<Promise<User | null>, [unknown]>(),
@@ -104,20 +129,20 @@ describe('SkillsService', () => {
     const totalSkillsMock = 20;
 
     it('проверка успешного ответа', async () => {
-      skillsRepository.findAndCount.mockResolvedValue([
-        mockSkills,
-        totalSkillsMock,
-      ]);
+      queryBuilder.getManyAndCount.mockResolvedValue([mockSkills, totalSkillsMock]);
 
       const result = await service.findAll(pageQueryMock);
 
-      expect(skillsRepository.findAndCount).toHaveBeenCalledWith({
-        skip: (pageQueryMock.page - 1) * pageQueryMock.limit,
-        take: pageQueryMock.limit,
-        order: {
-          title: 'ASC',
-        },
-      });
+      expect(skillsRepository.createQueryBuilder).toHaveBeenCalledWith('skill');
+      expect(queryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'skill.category',
+        'category',
+      );
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith('skill.title', 'ASC');
+      expect(queryBuilder.skip).toHaveBeenCalledWith(
+        (pageQueryMock.page - 1) * pageQueryMock.limit,
+      );
+      expect(queryBuilder.take).toHaveBeenCalledWith(pageQueryMock.limit);
       expect(result).toEqual({
         data: [...mockSkills],
         meta: {
@@ -136,7 +161,7 @@ describe('SkillsService', () => {
     });
 
     it('проверка ошибки при попытке запроса страницы с номером, большим, чем общее число страниц', async () => {
-      skillsRepository.findAndCount.mockResolvedValue([mockSkills, 4]);
+      queryBuilder.getManyAndCount.mockResolvedValue([mockSkills, 4]);
 
       await expect(service.findAll(pageQueryMock)).rejects.toThrow(
         NotFoundException,
