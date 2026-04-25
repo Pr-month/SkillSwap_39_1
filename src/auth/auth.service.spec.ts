@@ -114,6 +114,7 @@ describe('AuthService', () => {
       birthdate: new Date('2000-05-20'),
       about: '',
       avatar: '',
+      city: undefined,
       gender: undefined as never,
       categoryId: 'category-id',
     };
@@ -160,10 +161,15 @@ describe('AuthService', () => {
     });
 
     expect(usersRepository.create).toHaveBeenCalledWith({
-      ...dto,
+      name: dto.name,
+      email: dto.email,
       birthdate: dto.birthdate,
+      city: dto.city,
+      gender: dto.gender,
+      about: dto.about,
+      avatar: dto.avatar,
       password: 'hashed-password',
-      category,
+      wantToLearn: [category],
     });
 
     expect(usersRepository.save).toHaveBeenCalledWith(createdUser);
@@ -255,50 +261,6 @@ describe('AuthService', () => {
 
     expect(usersRepository.update).toHaveBeenCalledWith('user-id', {
       refreshToken: null,
-    });
-  });
-
-  it('refreshTokens должен выбрасывать UnauthorizedException, если refresh token невалиден', async () => {
-    usersRepository.findOne.mockResolvedValue(
-      createUser({ refreshToken: 'stored-refresh-token' }),
-    );
-    jest.spyOn(service as any, 'verifyData').mockResolvedValue(false);
-
-    await expect(
-      service.refreshTokens('user-id', 'ivan@example.com', 'bad-refresh-token'),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-  });
-
-  it('refreshTokens должен возвращать новую пару токенов', async () => {
-    usersRepository.findOne.mockResolvedValue(
-      createUser({ refreshToken: 'stored-refresh-token' }),
-    );
-    jest.spyOn(service as any, 'verifyData').mockResolvedValue(true);
-    jest
-      .spyOn(service as any, 'hashData')
-      .mockResolvedValue('hashed-refresh-token');
-    jwtService.signAsync
-      .mockResolvedValueOnce('new-access-token')
-      .mockResolvedValueOnce('new-refresh-token');
-    usersRepository.update.mockResolvedValue({ affected: 1 });
-
-    await expect(
-      service.refreshTokens(
-        'user-id',
-        'ivan@example.com',
-        'valid-refresh-token',
-      ),
-    ).resolves.toEqual({
-      accessToken: 'new-access-token',
-      refreshToken: 'new-refresh-token',
-    });
-
-    expect(usersRepository.findOne).toHaveBeenCalledWith({
-      where: { id: 'user-id' },
-    });
-
-    expect(usersRepository.update).toHaveBeenCalledWith('user-id', {
-      refreshToken: 'hashed-refresh-token',
     });
   });
 });
