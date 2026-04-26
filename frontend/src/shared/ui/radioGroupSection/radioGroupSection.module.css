@@ -1,0 +1,17 @@
+@import url('../../../app/styles/variables.css');
+
+.radioGroupSection {
+  margin: 0;
+}
+
+.title {
+  color: var(--text, #253017);
+  padding-block-end: 20px;
+  margin: 0;
+}
+
+.radioOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

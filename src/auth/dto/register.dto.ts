@@ -12,8 +12,9 @@ import {
   MinLength,
   MaxLength,
   IsOptional,
+  IsUUID,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '../../common/enums/gender.enum';
 import { normalizeString } from '../../common/utils';
@@ -62,6 +63,7 @@ export class RegisterDto {
     example: '1998-05-20T00:00:00.000Z',
     format: 'date-time',
   })
+  @Type(() => Date)
   @IsDate()
   @MinDate(new Date(1900, 0, 1))
   @MaxDate(() => new Date())
@@ -111,4 +113,12 @@ export class RegisterDto {
   @IsOptional()
   @MaxLength(255)
   avatar: string;
+
+  // Категория, которой пользователь хочет обучиться
+  @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    format: 'uuid',
+  })
+  @IsUUID()
+  categoryId: string;
 }

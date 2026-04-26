@@ -1,0 +1,64 @@
+@import url('./normalize.css');
+@import url('../assets/fonts/font.css');
+@import url('./variables.css');
+@import url('./dark.css');
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+h1 {
+  font-family: Jost, sans-serif;
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 40px;
+}
+
+h2 {
+  font-family: Jost, sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 32px;
+}
+
+h3 {
+  font-family: Jost, sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+h4 {
+  font-family: Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+p {
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+  background-color: var(--button-primary-hover-color);
+}
+
+caption {
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+}

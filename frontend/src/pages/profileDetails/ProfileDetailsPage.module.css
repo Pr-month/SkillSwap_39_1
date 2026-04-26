@@ -1,0 +1,30 @@
+/* 1. Основная обертка страницы профиля */
+.profileWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f9faf7;
+}
+
+/* 2. Контент */
+.profileContent {
+  display: flex;
+  justify-content: space-between;
+  min-inline-size: 1368px;
+  margin: 36px auto 60px;
+  gap: 24px;
+  min-block-size: 752px;
+  font-size: 16px;
+  font-family: Roboto, Arial, sans-serif;
+  color: #253017;
+}
+
+/* 3. Основная информация пользователя */
+.profileMain {
+  min-inline-size: 900px;
+  background: #fff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 60px;
+  position: relative;
+}

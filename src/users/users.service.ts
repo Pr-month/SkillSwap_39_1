@@ -4,19 +4,22 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUsersQueryDto } from './dto/get-users-query.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { hashPassword, verifyPassword } from './utils/password.util';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
   ) {}
 
   create(createUserDto: CreateUserDto) {
@@ -25,12 +28,18 @@ export class UsersService {
   }
 
   async findAll(queryDto: GetUsersQueryDto) {
-    const { page = 1, limit = 10 } = queryDto;
+    const { page = 1, limit = 10, city, gender, name } = queryDto;
 
     const skip = (page - 1) * limit;
     const take = limit;
 
-    const total = await this.usersRepository.count();
+    const where = {
+      ...(city ? { city: ILike(`%${city}%`) } : {}),
+      ...(gender ? { gender } : {}),
+      ...(name ? { name: ILike(`%${name}%`) } : {}),
+    };
+
+    const total = await this.usersRepository.count({ where });
     const totalPages = Math.ceil(total / limit);
 
     if (total > 0 && page > totalPages) {
@@ -38,6 +47,7 @@ export class UsersService {
     }
 
     const users = await this.usersRepository.find({
+      where,
       skip,
       take,
       order: {
@@ -77,11 +87,36 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const result = await this.usersRepository.update(id, updateUserDto);
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['wantToLearn'],
+    });
 
-    if (!result.affected) {
+    if (!user) {
       throw new NotFoundException('Пользователь не найден в базе данных');
     }
+
+    const { categoryId, birthdate, ...rest } = updateUserDto;
+
+    Object.assign(user, rest);
+
+    if (birthdate !== undefined) {
+      user.birthdate = birthdate ? new Date(birthdate) : null;
+    }
+
+    if (categoryId !== undefined) {
+      const category = await this.categoriesRepository.findOne({
+        where: { id: categoryId },
+      });
+
+      if (!category) {
+        throw new NotFoundException('Категория не найдена');
+      }
+
+      user.wantToLearn = [category];
+    }
+
+    await this.usersRepository.save(user);
 
     return this.findOne(id);
   }

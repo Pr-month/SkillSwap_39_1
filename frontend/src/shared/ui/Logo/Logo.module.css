@@ -1,0 +1,42 @@
+/* stylelint-disable font-family-name-quotes */
+/* stylelint-disable property-no-vendor-prefix */
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 200px;
+  padding: 10px;
+}
+
+.logoWrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.logoCircle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #abd27a;
+  border-radius: 50%;
+}
+
+.logoIcon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  mask: url('@/app/assets/static/icons/logo.svg') no-repeat center;
+  -webkit-mask: url('@/app/assets/static/icons/logo.svg') no-repeat center;
+  mask-size: 20px 20px;
+  -webkit-mask-size: 20px 20px;
+  background-color: #f9faf7;
+}
+
+.logoText {
+  font-family: 'Jost', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  color: #000;
+}

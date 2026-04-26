@@ -1,0 +1,241 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  column-gap: 24px;
+  width: 100%;
+  height: 100%;
+  color: var(--color-text);
+  font-family: Roboto, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 24px;
+  width: 556px;
+  height: 692px;
+  border-radius: 12px;
+  padding: 0 60px;
+  background-color: #fff;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 16px;
+  width: 100%;
+}
+
+.contentButton {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.logoGoogle {
+  display: block;
+  width: 24px;
+  height: 24px;
+  background: url('../../../app/assets/static/images/logos/google.svg') no-repeat center/contain;
+}
+
+.logoApple {
+  display: block;
+  width: 24px;
+  height: 24px;
+  background: url('../../../app/assets/static/images/logos/apple.svg') no-repeat center/contain;
+}
+
+.divider {
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 20px);
+  height: 1px;
+  background-color: var(--divider-bg);
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.dividerText {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 0 4px;
+  background-color: #fff;
+}
+
+.form {
+  align-self: flex-start;
+  width: 100%;
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 16px;
+  border: none;
+  padding: 0;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-weight: 400;
+  font-size: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+  margin: 0;
+  transition: margin-bottom 0.5s ease;
+}
+
+.inputGroup:has(.withError) {
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--color-caption);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.passwordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.toggleButton {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  transform: translateY(-50%);
+}
+
+.eyeClosed {
+  width: 24px;
+  height: 24px;
+  background: url('../../../app/assets/static/images/icons/eye-slash.svg') center/contain no-repeat;
+}
+
+.eyeOpen {
+  width: 24px;
+  height: 24px;
+  background: url('../../../app/assets/static/images/icons/eye.svg') center/contain no-repeat;
+}
+
+.validationContent {
+  margin: 4px 0 0;
+  color: var(--color-error);
+  font-size: 12px;
+  line-height: 16px;
+  animation: fade 0.5s ease;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.validationPass {
+  color: var(--color-text);
+}
+
+.authLinks {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 12px;
+  margin-top: 24px;
+}
+
+.link {
+  color: var(--color-text-link);
+  font-size: 16px;
+}
+
+.image {
+  width: 300px;
+  height: 300px;
+  margin-bottom: 16px;
+  background: url('../../../app/assets/static/images/background/light-bulb.svg') center/contain
+    no-repeat;
+}
+
+.contentRightBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 12px;
+}
+
+.contentHeading {
+  margin: 0;
+  color: inherit;
+  font-size: 24px;
+  letter-spacing: -1.1%;
+}
+
+.contentText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.inputError {
+  border-color: var(--color-error);
+}
+
+.errorContainer {
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.5s ease,
+    opacity 0.5s ease;
+  opacity: 0;
+}
+
+.withError {
+  max-height: 80px;
+  opacity: 1;
+}

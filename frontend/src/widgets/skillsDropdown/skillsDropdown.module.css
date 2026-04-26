@@ -1,0 +1,134 @@
+.skillsDropdown {
+  position: absolute;
+  top: 82%;
+  left: 14.7%;
+  background: #fff;
+  border: 1px solid #69735d;
+  border-radius: 12px;
+  padding: 60px;
+  z-index: 1001;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.skillsDropdown::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.skillsdropdownContent {
+  display: flex;
+  gap: 40px;
+  height: 100%;
+}
+
+.skillscolumn {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 488px;
+}
+
+.skillscategory {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skillscategoryHeader {
+  display: flex;
+  gap: 12px;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconMask {
+  width: 24px;
+  height: 24px;
+  background-color: #000;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+.categoryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 436px;
+}
+
+.categoryTitle {
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -1.1%;
+  margin: 0;
+  color: #253017;
+}
+
+.subcategories {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subcategory {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 2%;
+  color: #253017;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.subcategory:hover {
+  color: #5a8e22;
+}
+
+@media (max-width: 1200px) {
+  .skillsDropdown {
+    width: 90%;
+    left: 5%;
+    padding: 30px;
+  }
+
+  .skillsdropdownContent {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .skillsсolumn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .skillsDropdown {
+    top: 100%;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .skillscategoryHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .skillscategoryContent {
+    width: 100%;
+    padding-left: 0;
+  }
+}

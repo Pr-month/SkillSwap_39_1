@@ -1,0 +1,135 @@
+.cardContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 20px;
+  box-sizing: border-box;
+  width: 324px;
+  height: auto;
+  border: none;
+  border-radius: var(--user-card-container-border-radius);
+  padding: 20px;
+  overflow: hidden;
+  background-color: var(--user-card-container-bg);
+  font-family: var(--user-card-font-family);
+  min-height: 368px;
+  flex-grow: 0;
+}
+
+.headerCard {
+  display: flex;
+  flex-direction: row;
+  align-self: flex-start;
+  justify-content: space-between;
+  column-gap: 10px;
+}
+
+.image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  row-gap: 4px;
+}
+
+.cardLike {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.likeButton {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border: none;
+  padding: 0;
+  background-color: #000;
+  background-size: 24px 24px;
+  transition: 0.3s;
+  cursor: pointer;
+  mask: url('../../app/assets/static/images/icons/like.svg') no-repeat center;
+}
+
+.likeButtonActive {
+  background-color: var(--user-card-like-active-hover);
+  mask: url('../../app/assets/static/images/icons/isLike.svg') no-repeat center;
+}
+
+.likeButton:hover {
+  opacity: 0.6;
+  background-color: var(--user-card-like-active-hover);
+}
+
+.userName {
+  margin: 0;
+  font-weight: var(--user-card-name-font-weight);
+  font-size: var(--user-card-name-font-size);
+  line-height: var(--user-card-name-line-height);
+  font-family: var(--user-card-name-font-family);
+}
+
+.userCityAndAge {
+  margin: 0;
+  font-size: var(--user-card-city-and-age-font-size);
+  line-height: 16px;
+  font-weight: var(--user-card-city-and-age-weight);
+}
+
+.bodyCard {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  row-gap: 12px;
+  flex: 1;
+}
+
+.pointCard {
+  margin: 0;
+  font-weight: var(--user-card-point-font-weight);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.teach {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 8px;
+}
+
+.skills {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  column-gap: 4px;
+}
+
+.clock {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background-color: #000;
+  background-size: 24px 24px;
+  mask: url('../../app/assets/static/images/icons/clock.svg') no-repeat center;
+}
+
+.contentClock {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+}
