@@ -10,7 +10,8 @@ import {
   ApiUnauthorizedResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Gender } from '../common/enums/gender.enum';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 class AuthTokensResponseSwaggerDto {
   @ApiProperty({
@@ -31,84 +32,12 @@ class LogoutResponseSwaggerDto {
   message: string;
 }
 
-class RegisterBodySwaggerDto {
-  @ApiProperty({
-    example: 'Анна Иванова',
-    minLength: 2,
-    maxLength: 100,
-  })
-  name: string;
-
-  @ApiProperty({
-    example: 'anna@example.com',
-    maxLength: 255,
-  })
-  email: string;
-
-  @ApiProperty({
-    example: 'StrongP@ssw0rd1',
-    minLength: 8,
-    maxLength: 50,
-    description:
-      'Пароль должен содержать заглавную, строчную букву, цифру и спецсимвол',
-  })
-  password: string;
-
-  @ApiProperty({
-    example: '1998-05-20T00:00:00.000Z',
-    format: 'date-time',
-  })
-  birthdate: string;
-
-  @ApiProperty({
-    example: 'Москва',
-    required: false,
-    maxLength: 100,
-  })
-  city?: string;
-
-  @ApiProperty({
-    enum: Gender,
-    example: Gender.FEMALE,
-    required: false,
-  })
-  gender?: Gender;
-
-  @ApiProperty({
-    example: 'Люблю учиться и делиться опытом',
-    required: false,
-    maxLength: 255,
-  })
-  about?: string;
-
-  @ApiProperty({
-    example: 'https://example.com/avatar.png',
-    required: false,
-    maxLength: 255,
-  })
-  avatar?: string;
-}
-
-class LoginBodySwaggerDto {
-  @ApiProperty({
-    example: 'anna@example.com',
-    maxLength: 255,
-  })
-  email: string;
-
-  @ApiProperty({
-    example: 'StrongP@ssw0rd1',
-    minLength: 6,
-    maxLength: 255,
-  })
-  password: string;
-}
-
 function ApiRefreshTokenProtected() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiUnauthorizedResponse({
-      description: 'Требуется корректный refresh token в заголовке Authorization',
+      description:
+        'Требуется корректный refresh token в заголовке Authorization',
     }),
   );
 }
@@ -120,19 +49,21 @@ export function ApiAuthController() {
 export function ApiAuthRegister() {
   return applyDecorators(
     ApiOperation({ summary: 'Регистрация пользователя' }),
-    ApiBody({ type: RegisterBodySwaggerDto }),
+    ApiBody({ type: RegisterDto }),
     ApiCreatedResponse({
       description: 'Пользователь успешно зарегистрирован',
       type: AuthTokensResponseSwaggerDto,
     }),
-    ApiBadRequestResponse({ description: 'Некорректные данные для регистрации' }),
+    ApiBadRequestResponse({
+      description: 'Некорректные данные для регистрации',
+    }),
   );
 }
 
 export function ApiAuthLogin() {
   return applyDecorators(
     ApiOperation({ summary: 'Вход пользователя' }),
-    ApiBody({ type: LoginBodySwaggerDto }),
+    ApiBody({ type: LoginDto }),
     ApiOkResponse({
       description: 'Успешная авторизация',
       type: AuthTokensResponseSwaggerDto,
