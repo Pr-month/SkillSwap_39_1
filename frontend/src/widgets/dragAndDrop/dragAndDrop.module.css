@@ -1,0 +1,52 @@
+.picsContainer {
+  height: 100%;
+  width: 100%;
+  border: 1px #69735d dashed;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.labelPlaceholder {
+  margin: 0;
+  padding-top: 20px;
+  color: #69735d;
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-style: regular;
+  line-height: 24px;
+  letter-spacing: 2%;
+  text-align: center;
+}
+
+.picsLabel {
+  color: #508826;
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-style: regular;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 2%;
+  padding: 8px 20px 20px;
+  justify-self: center;
+  position: relative;
+}
+
+.picsLabel::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  background: url('../../app/assets/static/images/icons/gallery-add.svg');
+  position: absolute;
+  left: -6px;
+  filter: brightness(0) saturate(100%) invert(46%) sepia(9%) saturate(2583%) hue-rotate(51deg)
+    brightness(98%) contrast(102%);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 2%;
+}

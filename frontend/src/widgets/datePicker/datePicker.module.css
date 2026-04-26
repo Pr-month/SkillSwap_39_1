@@ -1,0 +1,83 @@
+.datePickerContainer {
+  display: grid;
+  padding: 16px;
+  border: 1px solid var(--button-primary-content-disabled-color);
+  border-radius: 12px;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
+  max-width: 248px;
+  max-height: 328px;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background-color: var(--color-card);
+}
+/* stylelint-disable-next-line selector-pseudo-class-no-unknown */
+.datePickerContainer :global(.rdp-root) {
+  --rdp-accent-color: var(--color-text);
+  --rdp-day-height: 32px;
+  --rdp-day-width: 32px;
+  --rdp-day-button-height: 32px;
+  --rdp-day-button-width: 32px;
+  --rdp-months-gap: 0;
+}
+
+.nav {
+  display: none;
+}
+
+.datePicker {
+  grid-column: 1 / 3;
+}
+
+.dropdownRoot {
+  position: relative;
+  text-transform: capitalize;
+  padding: 8px 8px 8px 16px;
+}
+
+.weekday {
+  color: var(--color-text-link);
+  text-transform: capitalize;
+  font-size: 12px;
+  width: 32px;
+  height: 32px;
+  letter-spacing: 2%;
+}
+
+.outside {
+  color: var(--color-disabled-text);
+}
+
+.dropdowns {
+  display: flex;
+  justify-content: center;
+  padding-left: 21px;
+  padding-right: 24px;
+}
+
+.dropdown {
+  z-index: 2;
+  opacity: 0;
+  appearance: none;
+  position: absolute;
+  cursor: inherit;
+  border: none;
+  line-height: inherit;
+}
+
+.day {
+  font-size: 12px;
+  padding: 0;
+}
+
+.selected {
+  background-color: var(--color-accent);
+  border-radius: 50%;
+}
+
+.monthGrid {
+  border-collapse: collapse;
+  justify-self: center;
+}

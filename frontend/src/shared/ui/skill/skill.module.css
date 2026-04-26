@@ -1,0 +1,45 @@
+.skill {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--skill-component-border-radius);
+  padding: var(--skill-component-padding);
+  font-size: var(--skill-component-font-size);
+  line-height: 16px;
+  font-weight: 400;
+  box-sizing: border-box;
+  font-family: Roboto, Arial, sans-serif;
+}
+
+.business {
+  background-color: var(--skill-component-bg-business);
+}
+
+.creativity {
+  background-color: var(--skill-component-bg-creativity);
+}
+
+.languages {
+  background-color: var(--skill-component-bg-languages);
+}
+
+.development {
+  background-color: var(--skill-component-bg-development);
+}
+
+.home {
+  background-color: var(--skill-component-bg-home);
+}
+
+.health {
+  background-color: var(--skill-component-bg-health);
+}
+
+.default {
+  background-color: #fff;
+}
+
+.more {
+  background-color: var(--skill-component-bg-more);
+}

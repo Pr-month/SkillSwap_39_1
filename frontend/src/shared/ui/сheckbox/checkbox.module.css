@@ -1,0 +1,52 @@
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.hiddenCheckbox {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+}
+
+.customCheckbox {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-inline-start: 24px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkmark {
+  position: absolute;
+  left: 0;
+  height: 24px;
+  width: 24px;
+  transition: all 0.2s;
+}
+
+.customCheckbox.empty .checkmark {
+  background-color: var(--text, #000);
+  mask-image: url('../../../app/assets/static/images/icons/checkbox-empty.svg');
+  mask-repeat: no-repeat;
+}
+
+.customCheckbox.done .checkmark {
+  background-color: var(--accent, #abd27a);
+  mask-image: url('../../../app/assets/static/images/icons/checkbox-done.svg');
+  mask-repeat: no-repeat;
+}
+
+.customCheckbox.remove .checkmark {
+  background-color: var(--accent, #abd27a);
+  mask-image: url('../../../app/assets/static/images/icons/checkbox-remove.svg');
+  mask-repeat: no-repeat;
+}
+
+.labelText {
+  margin-inline-start: 8px;
+  color: var(--text, #253017);
+}

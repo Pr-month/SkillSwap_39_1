@@ -1,0 +1,244 @@
+.skillCard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: var(--skill-card-width, 916px);
+  border-radius: 12px;
+  padding: var(--skill-card-padding, 32px 52px);
+  background-color: var(--color-card, #fff);
+}
+
+.action {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.actionButton {
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border: none;
+  padding: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  opacity: 0.8;
+  background-color: var(--button-primary-pressed-color, #508826);
+}
+
+.actionButton:focus {
+  outline: none;
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid var(--button-primary-color, #abd27a);
+  outline-offset: 2px;
+}
+
+.skillDetails {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: var(--skill-details-gap, 77px);
+}
+
+.skillContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.contentBeforeButton {
+  flex: 1;
+}
+
+.title,
+.category,
+.description {
+  margin: 0;
+  padding: 0;
+}
+
+.title {
+  margin-bottom: 4px;
+  color: var(--color-text, #253017);
+  letter-spacing: -0.011em;
+}
+
+.category {
+  margin-bottom: 20px;
+  color: var(--color-caption, #69735d);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+}
+
+.description {
+  margin-bottom: 28px;
+  color: var(--color-text, #253017);
+  letter-spacing: 0.02em;
+}
+
+.button {
+  margin-top: auto;
+  border: none;
+  border-radius: var(--button-border-radius, 12px);
+  padding: 15px 20px;
+  color: var(--button-primary-content-color, #253017);
+  letter-spacing: 0.02em;
+  background-color: var(--button-primary-color, #abd27a);
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: var(--button-primary-hover-color, #deebc5);
+}
+
+.button:focus {
+  outline: none;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--button-primary-color, #abd27a);
+  outline-offset: 2px;
+}
+
+.skillImage {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+}
+
+.imageSlider {
+  position: relative;
+  display: inline-block;
+}
+
+.prevArrow,
+.nextArrow {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  color: #fff;
+  background: var(--color-disabled, #e4e8df);
+  transition: background-color 0.3s ease;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.prevArrow {
+  left: 16px;
+}
+
+.nextArrow {
+  right: 16px;
+}
+
+.prevArrow:hover,
+.nextArrow:hover,
+.prevArrow:focus,
+.nextArrow:focus {
+  background: var(--button-primary-hover-color, #deebc5);
+}
+
+.imageArrow {
+  display: block;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.image {
+  display: block;
+  width: 324px;
+  height: 324px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.imagePreview {
+  display: block;
+  width: 92px;
+  height: 92px;
+  border-radius: 12px;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.imagePreview:hover,
+.imagePreview:focus {
+  opacity: 0.8;
+}
+
+.imagePreview:focus {
+  outline: none;
+}
+
+.imagePreview:focus-visible {
+  outline: 2px solid var(--button-primary-color, #abd27a);
+  outline-offset: 2px;
+}
+
+.imagePreviewOverlay {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.imagePreviewOverlay:hover,
+.imagePreviewOverlay:focus {
+  opacity: 0.8;
+}
+
+.imagePreviewOverlay:focus {
+  outline: none;
+}
+
+.imagePreviewOverlay:focus-visible {
+  outline: 2px solid var(--button-primary-color, #abd27a);
+  outline-offset: 2px;
+}
+
+.imagePreviewOverlay img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.overlayText {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-text, #253017);
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: -0.011em;
+  background-color: color-mix(in hsl, var(--color-alarm, #e0796e) 50%, transparent);
+}

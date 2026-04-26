@@ -6,7 +6,7 @@ import { DataSource } from 'typeorm';
 
 import { User } from '../users/entities/user.entity';
 import { seedAdminData } from './admin-data.seed';
-import { hashPassword } from '../users/utils/password.util';
+import { hashSeedPassword } from './seed-password.util';
 
 /**
  *
@@ -29,7 +29,7 @@ export async function seedAdmin(dataSource: DataSource) {
   }
 
   // Создание в БД Администратора
-  seedAdminData.password = await hashPassword(seedAdminData.password);
+  seedAdminData.password = await hashSeedPassword(seedAdminData.password);
   const admin = userRepository.create({
     ...seedAdminData,
   });

@@ -1,0 +1,18 @@
+.filtersPage {
+  margin: auto;
+  display: grid;
+  padding: 36px;
+  grid-template-columns: 324px auto;
+  gap: 24px;
+  max-width: 1440px;
+}
+
+.filtersPanelPontainer {
+  min-width: 324px;
+}
+
+.filtersGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

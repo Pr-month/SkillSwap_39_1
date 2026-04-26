@@ -1,0 +1,32 @@
+.container {
+  margin-block-start: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filterTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: var(--card-input, #fff);
+  border-radius: 12px;
+  color: var(--text, #253017);
+}
+
+.removeButton {
+  margin-inline-start: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  mask-image: url('../../../app/assets/static/images/icons/cross.svg');
+  mask-repeat: no-repeat;
+  background-color: var(--text, #253017);
+}
+
+.removeButton:hover {
+  color: var(--color-caption, #69735d);
+}

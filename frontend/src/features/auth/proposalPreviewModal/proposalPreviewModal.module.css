@@ -1,0 +1,78 @@
+.modal {
+  padding: 44px 60px 72px;
+}
+
+.skillCard {
+  --skill-card-width: 904px;
+  --skill-card-padding: 0;
+}
+
+.skillDetails {
+  --skill-details-gap: 44px;
+}
+
+.buttonContainer {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+}
+
+.button {
+  flex: 1;
+  box-sizing: border-box;
+  min-height: 48px;
+  margin-top: auto;
+  border-radius: var(--button-border-radius, 12px);
+  padding: 11px 20px;
+  letter-spacing: 0.02em;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.button:focus {
+  outline: none;
+}
+
+.primaryButton {
+  border: none;
+  color: var(--button-primary-content-color, #253017);
+  background-color: var(--button-primary-color, #abd27a);
+}
+
+.primaryButton:hover,
+.primaryButton:focus {
+  background-color: var(--button-primary-hover-color, #deebc5);
+}
+
+.primaryButton:focus-visible {
+  outline: 2px solid var(--button-primary-color, #abd27a);
+  outline-offset: 2px;
+}
+
+.secondaryButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--button-secondary-border-color, #abd27a);
+  color: var(--button-secondary-content-color, #253017);
+  background-color: var(--button-secondary-color, #fff);
+}
+
+.secondaryButton:hover,
+.secondaryButton:focus {
+  border-color: var(--button-secondary-hover-border-color, #deebc5);
+  color: var(--button-secondary-content-hover-color, #69735d);
+}
+
+.secondaryButton:focus-visible {
+  outline: 2px solid var(--button-secondary-border-color, #abd27a);
+  outline-offset: 2px;
+}
+
+.iconEdit {
+  display: block;
+  width: 24px;
+  height: 24px;
+}

@@ -1,4 +1,10 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
@@ -8,32 +14,60 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import type { StringValue } from 'ms';
 import { User } from '../users/entities/user.entity';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Category)
+    private readonly categoriesRepository: Repository<Category>,
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtSettings: TJwtConfig,
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const hashedPassword = await this.hashData(registerDto.password);
+    try {
+      const hashedPassword = await this.hashData(registerDto.password);
 
-    const user = this.usersRepository.create({
-      ...registerDto,
-      birthdate: registerDto.birthdate ? new Date(registerDto.birthdate) : null,
-      password: hashedPassword,
-    });
+      const category = await this.categoriesRepository.findOne({
+        where: { id: registerDto.categoryId },
+      });
 
-    const savedUser = await this.usersRepository.save(user);
+      if (!category) {
+        throw new NotFoundException('Категория не найдена');
+      }
 
-    const tokens = await this.generateTokens(savedUser.id, savedUser.email);
-    await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
+      const user = this.usersRepository.create({
+        name: registerDto.name,
+        email: registerDto.email,
+        birthdate: registerDto.birthdate
+          ? new Date(registerDto.birthdate)
+          : null,
+        city: registerDto.city,
+        gender: registerDto.gender,
+        about: registerDto.about,
+        avatar: registerDto.avatar,
+        password: hashedPassword,
+        wantToLearn: [category],
+      });
 
-    return tokens;
+      const savedUser = await this.usersRepository.save(user);
+
+      const tokens = await this.generateTokens(savedUser.id, savedUser.email);
+      await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
+
+      return tokens;
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(
+          'Пользователь с таким email уже существует',
+        );
+      }
+      throw error;
+    }
   }
 
   async login(loginDto: LoginDto) {

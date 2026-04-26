@@ -1,0 +1,98 @@
+.container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.skillCard {
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  transition: all 0.3s ease;
+}
+
+.skillCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+}
+
+.skillCategory {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #253017;
+}
+
+.skillSubcategory {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  color: #508826;
+}
+
+.skillName {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #253017;
+}
+
+.skillDescription {
+  font-size: 14px;
+  color: #69735d;
+  line-height: 1.5;
+}
+
+.emptyText {
+  font-size: 16px;
+  color: #253017;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.editContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9faf7;
+  border-radius: 12px;
+  border: 1px solid #e4e8df;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  color: #253017;
+  font-weight: 500;
+}
+
+.select {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #69735d;
+  font-size: 14px;
+  background-color: white;
+}
+
+.input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #69735d;
+  font-size: 14px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}

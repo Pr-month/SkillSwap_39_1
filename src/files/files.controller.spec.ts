@@ -30,9 +30,9 @@ describe('FilesController', () => {
   });
 
   it('uploadFile должен выбрасывать BadRequestException, если файл не передан', async () => {
-    await expect(controller.uploadFile(undefined as never)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      controller.uploadFile(undefined as never),
+    ).rejects.toBeInstanceOf(BadRequestException);
     expect(filesService.saveFileInfo).not.toHaveBeenCalled();
   });
 
@@ -56,7 +56,9 @@ describe('FilesController', () => {
 
     filesService.saveFileInfo.mockResolvedValue(expectedResponse);
 
-    await expect(controller.uploadFile(file)).resolves.toEqual(expectedResponse);
+    await expect(controller.uploadFile(file)).resolves.toEqual(
+      expectedResponse,
+    );
     expect(filesService.saveFileInfo).toHaveBeenCalledWith(file);
   });
 });
