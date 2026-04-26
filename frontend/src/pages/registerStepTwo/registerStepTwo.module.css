@@ -1,0 +1,114 @@
+.registrationContainer {
+  max-width: 1136px;
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  max-height: 100%;
+}
+
+.registrationForm {
+  display: grid;
+  padding: 40px 60px;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 16px;
+  column-gap: 20px;
+  height: 100%;
+  width: 100%;
+  justify-items: center;
+  max-width: 556px;
+  background-color: var(--color-card);
+}
+
+.elementFull {
+  grid-column: 1 / 3;
+  max-height: 78px;
+}
+
+.fixedHeight {
+  max-height: 78px; /* приходится ограниичивать элемент по высоте, т.к. нужно показывать ошибки, что не было предусмотрено дизайном */
+}
+
+.logoContainer {
+  width: 72px;
+  height: 72px;
+  grid-column: 1 / 3;
+}
+
+.avatarInput {
+  display: none;
+}
+
+.avatarLabel {
+  display: block;
+  position: relative;
+  background-image: url('@/app/assets/static/images/icons/user-circle.svg');
+  width: 72px;
+  height: 72px;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.avatarLabel::after {
+  display: block;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  content: '';
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-accent);
+  border-radius: 50%;
+}
+
+.avatarLabelPlusIcon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  z-index: 1;
+  filter: invert() brightness(1.2);
+}
+
+.datePicker {
+  width: 100%;
+}
+
+.datePickerWrapper {
+  max-width: 208px;
+  grid-column: 1 / 2;
+  position: relative;
+}
+
+.calendarHeaderLevel {
+  background: none;
+  line-height: 24px;
+  border: none;
+}
+
+.datePickerPosition {
+  left: 0;
+  position: absolute;
+  top: 100%;
+  min-width: 280px;
+  min-height: 360px;
+  box-sizing: border-box;
+}
+
+.buttonContainer {
+  padding-top: 12px;
+  display: flex;
+  gap: 20px;
+  grid-column: 1 / 3;
+  width: 100%;
+  height: 100%;
+}
+
+.errorText {
+  color: var(--color-error);
+  font-size: 12px;
+  line-height: 16px;
+  position: relative;
+  text-align: center;
+  margin: 0;
+}

@@ -1,0 +1,8 @@
+/* Темные переменные */
+:root.dark {
+  --bg-color: #121212;
+  --text-color: #fff;
+  --link-color: #bb86fc;
+  --button-bg: #1f1f1f;
+  --button-text: #fff;
+}

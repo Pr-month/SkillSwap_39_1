@@ -1,0 +1,4 @@
+.shareButton {
+  background-color: #000;
+  mask: url('@/app/assets/static/images/icons/share.svg') no-repeat center;
+}

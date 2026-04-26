@@ -1,0 +1,39 @@
+.aboutSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  padding: 135px 60px;
+  max-height: 689px;
+}
+
+.icon {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+.infoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 1136px;
+  max-height: 100%;
+}
+
+.infoBlockHeader {
+  font-family: Jost, sans-serif;
+  font-weight: 500;
+  font-style: medium;
+  font-size: 24px;
+  line-height: 28px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.infoBlockText {
+  line-height: 24px;
+  text-align: center;
+  vertical-align: middle;
+}

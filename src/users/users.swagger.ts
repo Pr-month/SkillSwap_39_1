@@ -149,8 +149,6 @@ export function ApiUsersUpdateMe() {
   return applyDecorators(
     ApiOperation({
       summary: 'Обновить профиль текущего пользователя',
-      description:
-        'Метод подключен, но UpdateUserDto пока не содержит полей, поэтому сейчас swagger отражает пустое тело запроса.',
     }),
     ApiUsersProtected(),
     ApiBody({ type: UpdateUserDto }),
@@ -159,11 +157,10 @@ export function ApiUsersUpdateMe() {
       type: ResponseUserDto,
     }),
     ApiBadRequestResponse({
-      description:
-        'Тело запроса должно быть пустым, так как UpdateUserDto пока не содержит полей',
+      description: 'Некорректные данные для обновления профиля',
     }),
     ApiNotFoundResponse({
-      description: 'Пользователь не найден в базе данных',
+      description: 'Пользователь или категория не найдены',
     }),
   );
 }
