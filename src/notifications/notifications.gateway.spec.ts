@@ -1,6 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Server } from 'socket.io';
 import { WsJwtGuard } from '../auth/guards/ws-jwt-guard';
+import { Role } from '../common/enums/role.enum';
 import { NotificationsGateway } from './notifications.gateway';
+
+type GatewayClient = Parameters<NotificationsGateway['handleConnection']>[0];
+type ConnectClient = Parameters<NotificationsGateway['handleConnect']>[0];
 
 describe('NotificationsGateway', () => {
   let gateway: NotificationsGateway;
@@ -29,125 +34,119 @@ describe('NotificationsGateway', () => {
   });
 
   it('handleConnection должен подключать пользователя к его комнате и отправлять событие connected', async () => {
-    const client: {
-      id: string;
-      data: {
-        user?: { sub: string };
-        userId?: string;
-      };
-      join: jest.Mock;
-      emit: jest.Mock;
-      disconnect: jest.Mock;
-    } = {
+    const join = jest.fn().mockResolvedValue(undefined);
+    const emit = jest.fn();
+    const disconnect = jest.fn();
+
+    const client = {
       id: 'socket-id',
       data: {
         user: {
           sub: 'user-id',
+          email: 'user@example.com',
+          role: Role.USER,
         },
       },
-      join: jest.fn().mockResolvedValue(undefined),
-      emit: jest.fn(),
-      disconnect: jest.fn(),
-    };
+      join,
+      emit,
+      disconnect,
+    } as unknown as GatewayClient;
 
-    wsJwtGuard.validateToken.mockResolvedValue(true);
+    wsJwtGuard.validateToken.mockResolvedValue({
+      sub: 'user-id',
+      email: 'user@example.com',
+      role: Role.USER,
+    });
 
-    await gateway.handleConnection(client as any);
+    await gateway.handleConnection(client);
 
     expect(wsJwtGuard.validateToken).toHaveBeenCalledWith(client);
     expect(client.data.userId).toBe('user-id');
-    expect(client.join).toHaveBeenCalledWith('user-id');
-    expect(client.emit).toHaveBeenCalledWith('connected', {
+    expect(join).toHaveBeenCalledWith('user-id');
+    expect(emit).toHaveBeenCalledWith('connected', {
       message: 'Подключен к серверу уведомлений',
     });
-    expect(client.disconnect).not.toHaveBeenCalled();
+    expect(disconnect).not.toHaveBeenCalled();
   });
 
   it('handleConnection должен отключать клиента, если после валидации токена не найден userId', async () => {
-    const client: {
-      id: string;
-      data: {
-        user?: { sub: string };
-        userId?: string;
-      };
-      join: jest.Mock;
-      emit: jest.Mock;
-      disconnect: jest.Mock;
-    } = {
+    const join = jest.fn();
+    const emit = jest.fn();
+    const disconnect = jest.fn();
+
+    const client = {
       id: 'socket-id',
       data: {},
-      join: jest.fn(),
-      emit: jest.fn(),
-      disconnect: jest.fn(),
-    };
+      join,
+      emit,
+      disconnect,
+    } as unknown as GatewayClient;
 
-    wsJwtGuard.validateToken.mockResolvedValue(true);
+    wsJwtGuard.validateToken.mockResolvedValue({
+      sub: '',
+      email: 'user@example.com',
+      role: Role.USER,
+    });
 
-    await gateway.handleConnection(client as any);
+    await gateway.handleConnection(client);
 
-    expect(client.disconnect).toHaveBeenCalled();
-    expect(client.join).not.toHaveBeenCalled();
-    expect(client.emit).not.toHaveBeenCalled();
+    expect(disconnect).toHaveBeenCalled();
+    expect(join).not.toHaveBeenCalled();
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('handleConnection должен отключать клиента при ошибке валидации токена', async () => {
-    const client: {
-      id: string;
-      data: {
-        user?: { sub: string };
-        userId?: string;
-      };
-      join: jest.Mock;
-      emit: jest.Mock;
-      disconnect: jest.Mock;
-    } = {
+    const join = jest.fn();
+    const emit = jest.fn();
+    const disconnect = jest.fn();
+
+    const client = {
       id: 'socket-id',
       data: {},
-      join: jest.fn(),
-      emit: jest.fn(),
-      disconnect: jest.fn(),
-    };
+      join,
+      emit,
+      disconnect,
+    } as unknown as GatewayClient;
 
     wsJwtGuard.validateToken.mockRejectedValue(new Error('Invalid token'));
 
-    await gateway.handleConnection(client as any);
+    await gateway.handleConnection(client);
 
-    expect(client.disconnect).toHaveBeenCalled();
-    expect(client.join).not.toHaveBeenCalled();
-    expect(client.emit).not.toHaveBeenCalled();
+    expect(disconnect).toHaveBeenCalled();
+    expect(join).not.toHaveBeenCalled();
+    expect(emit).not.toHaveBeenCalled();
   });
 
   it('handleConnect должен добавлять пользователя в комнату', () => {
-    const client: {
-      data: {
-        user?: { sub: string };
-        userId?: string;
-      };
-      join: jest.Mock;
-    } = {
+    const join = jest.fn();
+
+    const client = {
       data: {
         user: {
           sub: 'user-id',
+          email: 'user@example.com',
+          role: Role.USER,
         },
       },
-      join: jest.fn(),
-    };
+      join,
+    } as unknown as ConnectClient;
 
-    gateway.handleConnect(client as any);
+    gateway.handleConnect(client);
 
-    expect(client.join).toHaveBeenCalledWith('user-id');
+    expect(join).toHaveBeenCalledWith('user-id');
   });
 
-  it('notifyUser должен отправлять уведомление о новой заявке', async () => {
+  it('notifyUser должен отправлять уведомление о новой заявке', () => {
     const emit = jest.fn();
+    const to = jest.fn().mockReturnValue({
+      emit,
+    });
 
     gateway.server = {
-      to: jest.fn().mockReturnValue({
-        emit,
-      }),
-    } as any;
+      to,
+    } as unknown as Server;
 
-    await gateway.notifyUser('user-id', {
+    gateway.notifyUser('user-id', {
       type: 'new_request',
       skillTitle: 'NestJS',
       fromUser: {
@@ -156,7 +155,7 @@ describe('NotificationsGateway', () => {
       },
     });
 
-    expect(gateway.server.to).toHaveBeenCalledWith('user-id');
+    expect(to).toHaveBeenCalledWith('user-id');
     expect(emit).toHaveBeenCalledWith('notificateNewRequest', {
       type: 'new_request',
       skillTitle: 'NestJS',
