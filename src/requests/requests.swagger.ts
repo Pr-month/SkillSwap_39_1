@@ -15,6 +15,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { RequestStatus } from '../common/enums/request-status.enum';
+import { CreateRequestDto } from './dto/create-request.dto';
+import { UpdateRequestDto } from './dto/update-request.dto';
 
 class RequestUserPreviewSwaggerDto {
   @ApiProperty({
@@ -193,29 +195,6 @@ class FindIncomingRequestsResponseSwaggerDto {
   pagination: RequestsPaginationSwaggerDto;
 }
 
-class CreateRequestBodySwaggerDto {
-  @ApiProperty({
-    example: 'aa0e8400-e29b-41d4-a716-446655440000',
-    format: 'uuid',
-  })
-  requestedSkillId: string;
-
-  @ApiProperty({
-    example: '990e8400-e29b-41d4-a716-446655440000',
-    format: 'uuid',
-    required: false,
-  })
-  offeredSkillId?: string;
-}
-
-class UpdateRequestBodySwaggerDto {
-  @ApiProperty({
-    enum: RequestStatus,
-    example: RequestStatus.ACCEPTED,
-  })
-  status: RequestStatus;
-}
-
 class RequestMutationResponseSwaggerDto extends RequestBaseSwaggerDto {}
 
 class DeleteRequestResponseSwaggerDto {
@@ -295,7 +274,7 @@ export function ApiRequestsFindIncoming() {
 export function ApiRequestsCreate() {
   return applyDecorators(
     ApiOperation({ summary: 'Создать заявку на обмен навыками' }),
-    ApiBody({ type: CreateRequestBodySwaggerDto }),
+    ApiBody({ type: CreateRequestDto }),
     ApiCreatedResponse({
       description: 'Заявка успешно создана',
       type: RequestMutationResponseSwaggerDto,
@@ -314,7 +293,7 @@ export function ApiRequestsUpdate() {
   return applyDecorators(
     ApiOperation({ summary: 'Обновить статус заявки' }),
     ApiRequestIdParam(),
-    ApiBody({ type: UpdateRequestBodySwaggerDto }),
+    ApiBody({ type: UpdateRequestDto }),
     ApiOkResponse({
       description: 'Статус заявки успешно обновлен',
       type: RequestMutationResponseSwaggerDto,
