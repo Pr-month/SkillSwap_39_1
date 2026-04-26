@@ -4,7 +4,9 @@ import { ILike, Repository } from 'typeorm';
 import { CitiesService } from './cities.service';
 import { City } from './entities/city.entity';
 
-type CitiesRepositoryMock = Partial<Record<keyof Repository<City>, jest.Mock>> & {
+type CitiesRepositoryMock = Partial<
+  Record<keyof Repository<City>, jest.Mock>
+> & {
   find: jest.Mock;
 };
 

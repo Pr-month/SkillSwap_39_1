@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
+import { isUUID } from 'class-validator';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './entities/category.entity';
@@ -43,6 +44,7 @@ export class CategoriesService {
       name,
       parent,
       parentId: parent?.id || null,
+      children: [],
     });
 
     return this.categoriesRepository.save(category);
@@ -54,6 +56,7 @@ export class CategoriesService {
         parentId: IsNull(),
       },
       relations: {
+        parent: true,
         children: true,
       },
       order: {
@@ -65,12 +68,32 @@ export class CategoriesService {
     });
   }
 
-  findOne(id: string) {
-    return `Получение категории с id ${id}`;
+  async findOne(id: string) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Категория не найдена');
+    }
+
+    const category = await this.categoriesRepository.findOne({
+      where: { id },
+      relations: {
+        parent: true,
+        children: true,
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Категория не найдена');
+    }
+
+    return category;
   }
 
   // Обновление категории по id
   async update(id: string, categoryDto: UpdateCategoryDto) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Категория не найдена в базе данных');
+    }
+
     const category = await this.categoriesRepository.findOne({
       where: { id },
       relations: ['parent'],
@@ -119,6 +142,10 @@ export class CategoriesService {
   }
 
   async remove(id: string) {
+    if (!isUUID(id)) {
+      throw new NotFoundException('Категория для удаления не найдена');
+    }
+
     const category = await this.categoriesRepository.findOneBy({ id });
 
     if (!category)

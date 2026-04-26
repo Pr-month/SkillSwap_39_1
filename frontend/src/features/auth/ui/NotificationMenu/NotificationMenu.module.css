@@ -1,0 +1,184 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable alpha-value-notation */
+/* stylelint-disable color-function-notation */
+
+.notificationMenu {
+  position: fixed;
+  width: 438px;
+  max-height: 64vh;
+  top: 98px;
+  right: 260px;
+  background: var(--bg-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 35px 60px;
+  z-index: 1100;
+  overflow-y: auto;
+}
+
+.headerMenu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headerMenuTitle {
+  font-size: 24px;
+  margin: 22px 0;
+}
+
+.readAll {
+  background: none;
+  border: none;
+  color: #4a6b22;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  padding: 0;
+}
+
+.readAll:hover,
+.clearButton:hover {
+  background-color: var(--button-primary-hover-color);
+}
+
+.notificationList {
+  margin: 18px 0;
+}
+
+.notificationItem {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 15px;
+}
+
+.notificationHeader {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.notificationInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.userLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.userName {
+  font-weight: 400;
+  color: #253017;
+}
+
+.statusText {
+  color: #4a6b22;
+}
+
+.date {
+  color: #69735d;
+  font-size: 16px;
+  margin-left: auto;
+}
+
+.message {
+  color: #253017;
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.notificationActions {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.goToButton {
+  background: #f0f0f0;
+  color: #253017;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.buttonNotificationMenu {
+  text-decoration: none;
+  min-width: 116px;
+  border-radius: 12px;
+}
+
+.viewedSection {
+  margin-bottom: 20px;
+}
+
+.viewedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.viewedHeaderTitle {
+  font-size: 24px;
+  margin: 14px 0;
+}
+
+.notificationView {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 4px 0;
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: #4a6b22;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .notificationMenu {
+    width: 80vw;
+    right: 5vw;
+    top: 310px;
+    padding: 20px;
+  }
+
+  .notificationHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .userLine {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .date {
+    margin-left: 0;
+  }
+
+  .notificationActions {
+    margin-left: 0;
+  }
+}

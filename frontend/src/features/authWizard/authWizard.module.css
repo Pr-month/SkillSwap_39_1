@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 32px;
+  background-color: inherit;
+}
+
+.progressInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 12px;
+}
+
+.contentStep {
+  margin: 0;
+  font-family: Jost, Arial, sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -1.1%;
+  text-align: center;
+}
+
+.formsContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.formWrapper {
+  max-width: 1136px;
+  height: auto;
+  margin: 0 auto;
+}

@@ -1,0 +1,252 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable declaration-block-no-redundant-longhand-properties */
+/* stylelint-disable property-no-vendor-prefix */
+.header {
+  position: sticky;
+  top: 0;
+  background: #f9faf7;
+  z-index: 1000;
+  height: 104px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e3e3e3;
+  overflow-x: visible;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  max-height: 66px;
+  margin: 0 auto;
+  padding: 10px;
+  display: flex;
+  box-sizing: border-box;
+  justify-content: space-evenly;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  gap: 10px;
+}
+
+.allSkills {
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+  overflow: visible;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  background-color: transparent !important;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.link:hover,
+.themeToggle:hover,
+.linkAbout:hover,
+.iconWrapper:hover,
+.linkSkillsIcon:hover {
+  background-color: var(--button-primary-hover-color);
+  border-radius: 12px;
+}
+
+.themeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.linkAbout {
+  align-items: center;
+  white-space: nowrap;
+  padding: 12px;
+}
+
+.linkSkills {
+  padding: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  transition: background-color 0.2s ease;
+}
+
+.linkSkills.active {
+  background-color: #deebc5;
+  border-radius: 10px;
+}
+
+.skillsButton {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 12px;
+}
+
+.linkSkillsIcon {
+  padding: 12px 0;
+}
+
+/* Стиль для иконки "шеврон" */
+.chevronIcon {
+  display: inline-block;
+  width: 16px;
+  height: 8px;
+  background-color: #253017; /* Цвет иконки */
+  mask: url('../../app/assets/static/images/icons/chevron-down.svg') no-repeat center;
+  -webkit-mask: url('../../app/assets/static/images/icons/chevron-down.svg') no-repeat center;
+  transition: transform 0.2s ease;
+}
+
+.linkSkills.active .chevronIcon {
+  transform: rotate(180deg);
+}
+
+/* Стили для темы */
+.themeIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.moonIcon {
+  mask: url('../../app/assets/static/images/icons/moon.svg') no-repeat center;
+  -webkit-mask: url('../../app/assets/static/images/icons/moon.svg') no-repeat center;
+  background-color: #253017; /* Цвет иконки */
+}
+
+.sunIcon {
+  mask: url('../../app/assets/static/images/icons/sun.svg') no-repeat center;
+  -webkit-mask: url('../../app/assets/static/images/icons/sun.svg') no-repeat center;
+  background-color: #ffb300; /* Цвет иконки */
+}
+
+/* Добавляем новые стили для разных состояний */
+.header[data-auth='true'] .searchSection {
+  width: 715px;
+  margin-left: 40px;
+}
+
+.header[data-auth='false'] .searchSection {
+  width: 515px;
+}
+
+/* Мобильная версия (<= 768px) */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: stretch;
+    max-height: 480px;
+    gap: 15px;
+    padding: 0 15px;
+    overflow: hidden;
+  }
+
+  .leftSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .rightSection {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 0;
+    border-top: 1px solid #e3e3e3;
+  }
+
+  .allSkills {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .link {
+    width: 100%;
+    padding: 8px 0;
+  }
+
+  /* Убираем лишние отступы */
+  .header {
+    height: auto;
+    padding: 10px 0;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .container {
+    gap: 10px;
+  }
+
+  .rightSection {
+    flex-wrap: wrap;
+  }
+}
+
+/* Темная тема для хедера */
+.header.dark {
+  background: #253017;
+  border-bottom: 1px solid #333;
+}
+
+.header.dark .linkAbout,
+.header.dark .linkSkills {
+  color: #f0f0f0;
+}
+
+.header.dark .link:hover,
+.header.dark .themeToggle:hover,
+.header.dark .linkAbout:hover,
+.header.dark .iconWrapper:hover,
+.header.dark .linkSkillsIcon:hover {
+  background-color: #333;
+}
+
+.header.dark .linkSkills.active {
+  background-color: #2a3a1f;
+}
+
+.header.dark .chevronIcon {
+  background-color: #f0f0f0;
+}
+
+/* Обновляем медиа-запросы для темной темы */
+@media (max-width: 768px) {
+  .header.dark .rightSection {
+    border-top: 1px solid #333;
+  }
+}
