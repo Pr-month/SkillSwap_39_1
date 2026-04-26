@@ -37,6 +37,11 @@ export class SkillsController {
     return this.skillsService.findAll(query);
   }
 
+  @Get(':id/similar')
+  findSimilarUsers(@Param('id') id: string) {
+    return this.skillsService.findSimilarUsers(id);
+  }
+
   @ApiSkillsCreate()
   @Post()
   create(@Body() dto: CreateSkillDto) {

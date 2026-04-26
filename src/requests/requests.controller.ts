@@ -3,12 +3,12 @@ import {
   Controller,
   Get,
   Req,
-  Query,
   Post,
   Body,
-  Patch,
   Param,
+  Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-access.guard';
 import { AuthRequest } from '../auth/types/types';
@@ -28,6 +28,7 @@ import {
 @UseGuards(JwtAuthGuard)
 @ApiRequestsController()
 @Controller('requests')
+@UseGuards(JwtAuthGuard)
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
@@ -71,5 +72,13 @@ export class RequestsController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.requestsService.remove(id, req.user.sub);
+  }
+
+  @Post()
+  async createRequest(
+    @Req() req: AuthRequest,
+    @Body() createRequestDto: CreateRequestDto,
+  ) {
+    return this.requestsService.create(req.user.sub, createRequestDto);
   }
 }

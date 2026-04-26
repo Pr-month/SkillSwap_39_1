@@ -1,0 +1,15 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["global"]
+      }
+    ],
+    "property-no-unknown": true,
+    "alpha-value-notation": "percentage",
+    "color-function-notation": "modern"
+  },
+  "ignoreFiles": ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx"]
+}

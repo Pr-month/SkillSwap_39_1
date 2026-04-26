@@ -1,12 +1,12 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Skill } from './entities/skill.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { GetSkillsQueryDto } from './dto/get-skills-query.dto';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill-dto';
@@ -22,18 +22,35 @@ export class SkillsService {
   ) {}
 
   async findAll(queryDto: GetSkillsQueryDto) {
-    const { page = 1, limit = 10 } = queryDto;
+    const { page = 1, limit = 10, categoryId, search } = queryDto;
 
     const skip = (page - 1) * limit;
     const take = limit;
 
-    const [skills, total] = await this.skillRepository.findAndCount({
-      skip,
-      take,
-      order: {
-        title: 'ASC',
-      },
-    });
+    const queryBuilder = this.skillRepository
+      .createQueryBuilder('skill')
+      .leftJoinAndSelect('skill.category', 'category')
+      .orderBy('skill.title', 'ASC')
+      .skip(skip)
+      .take(take);
+
+    if (categoryId) {
+      queryBuilder.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    if (search) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('LOWER(skill.title) LIKE LOWER(:search)', {
+            search: `%${search}%`,
+          }).orWhere('LOWER(skill.description) LIKE LOWER(:search)', {
+            search: `%${search}%`,
+          });
+        }),
+      );
+    }
+
+    const [skills, total] = await queryBuilder.getManyAndCount();
 
     const totalPages = Math.ceil(total / limit);
 
@@ -56,12 +73,47 @@ export class SkillsService {
     };
   }
 
+  async findSimilarUsers(skillId: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id: skillId },
+      relations: ['category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.skills', 'skill')
+      .innerJoin('skill.category', 'category')
+      .where('category.id = :categoryId', { categoryId: skill.category.id })
+      .distinct(true)
+      .take(10)
+      .getMany();
+
+    return users;
+  }
+
+  async findOne(id: string) {
+    const skill = await this.skillRepository.findOne({
+      where: { id },
+      relations: ['owner', 'category'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Навык не найден');
+    }
+
+    return skill;
+  }
+
   async create(dto: CreateSkillDto) {
     const skill = this.skillRepository.create({
       title: dto.title,
       description: dto.description,
       images: dto.images,
-      category: { id: dto.categoryId }, //TODO: так как пока нету реализации категорий вставляем так
+      category: { id: dto.categoryId },
     });
 
     return await this.skillRepository.save(skill);
@@ -186,7 +238,7 @@ export class SkillsService {
     );
 
     if (isAlreadyFavorite) {
-      throw new ConflictException('Навык уже был добавлен в избранное ранее');
+      throw new ConflictException('Навык уже добавлен в избранное');
     }
 
     user.favoriteSkills.push(skill);

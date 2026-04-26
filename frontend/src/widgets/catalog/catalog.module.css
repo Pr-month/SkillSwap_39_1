@@ -1,0 +1,25 @@
+/* Верстка каталога */
+.catalog {
+  max-width: 1020px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ВРЕМЕНННОЕ РЕШЕНИЕ */
+
+/* Верстка кнопки назад */
+.backButton {
+  background: none;
+  border: none;
+  color: #2a5885;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 20px;
+  padding: 5px 10px;
+}
+
+.backButton:hover {
+  text-decoration: underline;
+}
