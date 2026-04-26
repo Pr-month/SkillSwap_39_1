@@ -4,7 +4,9 @@ import { Repository } from 'typeorm';
 import { File } from './entities/file.entity';
 import { FilesService } from './files.service';
 
-type FilesRepositoryMock = Partial<Record<keyof Repository<File>, jest.Mock>> & {
+type FilesRepositoryMock = Partial<
+  Record<keyof Repository<File>, jest.Mock>
+> & {
   create: jest.Mock;
   save: jest.Mock;
 };
@@ -61,7 +63,9 @@ describe('FilesService', () => {
     filesRepository.create.mockReturnValue(createdEntity);
     filesRepository.save.mockResolvedValue(savedEntity);
 
-    await expect(service.saveFileInfo(uploadedFile, 'user-id')).resolves.toEqual({
+    await expect(
+      service.saveFileInfo(uploadedFile, 'user-id'),
+    ).resolves.toEqual({
       message: 'Файл успешно загружен',
       id: 'file-id',
       filename: uploadedFile.filename,

@@ -1,0 +1,132 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.wrapper {
+  border: 1px var(--color-caption) solid;
+  border-radius: 16px;
+}
+
+.wrapperOpen {
+  box-sizing: border-box;
+  border-bottom: transparent;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  height: 100%;
+}
+
+.select {
+  box-sizing: border-box;
+  line-height: 24px;
+  padding: 12px 20px;
+  width: 100%;
+  background: url('@/app/assets/static/images/icons/chevron-down.svg');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 24px 24px;
+}
+.select:focus-visible {
+  outline: none;
+}
+
+.selectOpen {
+  border-bottom: 1px var(--button-disabled) solid;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  width: 100%;
+}
+
+.selectHasPlaceholder {
+  color: var(--color-caption);
+}
+
+.ul {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  z-index: 3;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--color-card);
+  border-radius: 0 0 16px 16px;
+  border-top: transparent;
+  border-left: 1px solid var(--color-caption);
+  border-right: 1px solid var(--color-caption);
+}
+
+.li {
+  position: relative;
+  padding: 8px 0 4px 44px;
+  list-style-type: none;
+  line-height: 24px;
+  letter-spacing: 2%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.li::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  width: 24px;
+  height: 24px;
+  background: url('@/app/assets/static/images/icons/checkbox-empty.svg');
+}
+
+.li:hover {
+  background-color: #e4e8df;
+}
+
+.chosen::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  width: 24px;
+  height: 24px;
+  background: url('@/app/assets/static/images/icons/checkbox-done.svg');
+}
+
+.selected {
+  color: var(--color-text-link);
+}
+
+.chosen:hover::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  width: 24px;
+  height: 24px;
+  background: url('@/app/assets/static/images/icons/checkbox-remove.svg');
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 2%;
+}
+
+.wrapperError {
+  border-color: var(--color-error);
+}
+
+.wrapperOpenError {
+  border-color: var(--color-error);
+  border-bottom: transparent;
+}
+
+.selectOpenError {
+  border-bottom: 1px solid var(--color-error);
+}
+
+.li:last-child {
+  border-bottom: 1px var(--color-caption) solid;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}

@@ -1,0 +1,114 @@
+.button {
+  position: relative;
+  height: 48px;
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: var(--button-border-radius);
+  cursor: pointer;
+  font-weight: var(--button-font-weight);
+  font-size: var(--button-font-size);
+  line-height: 24px;
+  padding: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  box-sizing: border-box;
+  font-family: Roboto, Arial, sans-serif;
+}
+
+.primary {
+  background-color: var(--button-primary-color);
+  color: var(--button-primary-content-color);
+}
+
+.primary:not(.disabled):hover {
+  background-color: var(--button-primary-hover-color);
+}
+
+.primary:not(.disabled):active {
+  background-color: var(--button-primary-pressed-color);
+  color: var(--button-primary-content-pressed-color);
+}
+
+.secondary {
+  background-color: transparent;
+  border: 1px solid var(--button-secondary-border-color);
+  color: var(--button-secondary-content-color);
+}
+
+.secondary:not(.disabled):hover {
+  border-color: var(--button-secondary-hover-border-color);
+  opacity: 0.6;
+}
+
+.secondary:not(.disabled):active {
+  border-color: var(--button-secondary-pressed-border-color);
+  color: var(--button-secondary-content-pressed-color);
+}
+
+.tertiary {
+  background-color: var(--button-tertiary-color);
+  border: none;
+  color: var(--button-tertiary-content-color);
+}
+
+.tertiary:not(.disabled):hover {
+  opacity: 0.6;
+}
+
+.tertiary:not(.disabled):active {
+  color: var(--button-secondary-content-pressed-color);
+}
+
+.primary.disabled {
+  background-color: var(--button-disabled);
+  color: var(--button-primary-content-disabled-color);
+}
+
+.secondary.disabled {
+  border-color: var(--button-secondary-disabled-border-color);
+  color: var(--button-secondary-content-disabled-color);
+}
+
+.tertiary.disabled {
+  color: var(--button-secondary-content-disabled-color);
+}
+
+.quaternary {
+  background-color: transparent;
+  border: 1px solid var(--button-quaternary-border-color);
+}
+
+.quaternary:not(.disabled):hover {
+  opacity: 0.6;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.content:active:not(.disabled *) {
+  transform: translateY(1px);
+}
+
+.disabled:hover {
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--button-primary-pressed-color);
+  outline-offset: 2px;
+}

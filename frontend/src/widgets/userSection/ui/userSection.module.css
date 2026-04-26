@@ -1,0 +1,33 @@
+.category {
+  margin-bottom: 40px;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.customButton {
+  width: 187px;
+}
+
+.usersGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(324px, 1fr));
+  gap: 24px;
+}
+
+/* Адаптивная верстка для сетки пользователей */
+@media (max-width: 767px) {
+  .usersGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .usersGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

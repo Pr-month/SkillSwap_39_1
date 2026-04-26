@@ -1,0 +1,41 @@
+.radioContainer {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.hiddenRadio {
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
+}
+
+.customRadio {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-inline-start: 24px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.radioDot {
+  position: absolute;
+  background-color: var(--text, #000);
+  mask-image: url("../../../app/assets/static/images/icons/radiobutton-empty.svg");
+  left: 0;
+  height: 24px;
+  width: 24px;
+  transition: all 0.2s;
+}
+
+.hiddenRadio:checked + .customRadio .radioDot {
+  background-color: var(--textlink-button-pressed, #508826);
+  mask-image: url("../../../app/assets/static/images/icons/radiobutton-active.svg");
+}
+
+.labelText {
+  margin-inline-start: 8px;
+  color: var(--text, #253017);
+}
