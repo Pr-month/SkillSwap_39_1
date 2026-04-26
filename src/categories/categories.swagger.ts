@@ -14,6 +14,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 class CategoryResponseSwaggerDto {
   @ApiProperty({
@@ -50,42 +52,6 @@ class CategoryTreeResponseSwaggerDto extends CategoryResponseSwaggerDto {
     ],
   })
   children: CategoryChildResponseSwaggerDto[];
-}
-
-class CreateCategoryBodySwaggerDto {
-  @ApiProperty({
-    example: 'Программирование',
-    minLength: 3,
-    maxLength: 255,
-  })
-  name: string;
-
-  @ApiProperty({
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    format: 'uuid',
-    required: false,
-  })
-  parentId?: string;
-}
-
-class UpdateCategoryBodySwaggerDto {
-  @ApiProperty({
-    example: 'Разработка',
-    minLength: 3,
-    maxLength: 255,
-    required: false,
-  })
-  name?: string;
-
-  @ApiProperty({
-    example: null,
-    format: 'uuid',
-    required: false,
-    nullable: true,
-    description:
-      'UUID родительской категории. Передайте null, чтобы сделать категорию корневой',
-  })
-  parentId?: string | null;
 }
 
 class DeleteCategoryResponseSwaggerDto {
@@ -128,7 +94,7 @@ export function ApiCategoriesCreate() {
       description: 'Доступно только администратору',
     }),
     ApiAdminCategoryProtected(),
-    ApiBody({ type: CreateCategoryBodySwaggerDto }),
+    ApiBody({ type: CreateCategoryDto }),
     ApiCreatedResponse({
       description: 'Категория успешно создана',
       type: CategoryResponseSwaggerDto,
@@ -181,7 +147,7 @@ export function ApiCategoriesUpdate() {
     }),
     ApiCategoryIdParam(),
     ApiAdminCategoryProtected(),
-    ApiBody({ type: UpdateCategoryBodySwaggerDto }),
+    ApiBody({ type: UpdateCategoryDto }),
     ApiOkResponse({
       description: 'Категория успешно обновлена',
       type: CategoryResponseSwaggerDto,
