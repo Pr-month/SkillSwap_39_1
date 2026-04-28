@@ -8,6 +8,7 @@ import {
   ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
+import { UploadFileDto } from './dto/upload-file.dto';
 
 class UploadFileResponseSwaggerDto {
   @ApiProperty({
@@ -59,19 +60,7 @@ export function ApiFilesUpload() {
         'Принимает изображение в формате multipart/form-data. Разрешены: PNG, JPG, JPEG, GIF, SVG, WEBP. Максимальный размер файла: 2 MB.',
     }),
     ApiConsumes('multipart/form-data'),
-    ApiBody({
-      schema: {
-        type: 'object',
-        required: ['file'],
-        properties: {
-          file: {
-            type: 'string',
-            format: 'binary',
-            description: 'Файл изображения для загрузки',
-          },
-        },
-      },
-    }),
+    ApiBody({ type: UploadFileDto }),
     ApiOkResponse({
       description: 'Файл успешно загружен',
       type: UploadFileResponseSwaggerDto,
