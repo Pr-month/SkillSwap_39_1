@@ -10,10 +10,11 @@ import {
   ApiOperation,
   ApiParam,
   ApiProperty,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { CreateSkillDto } from './dto/create-skill.dto';
+import { UpdateSkillDto } from './dto/update-skill-dto';
 
 class SkillBaseSwaggerDto {
   @ApiProperty({
@@ -97,62 +98,6 @@ class FindAllSkillsResponseSwaggerDto {
   meta: SkillsMetaSwaggerDto;
 }
 
-class CreateSkillBodySwaggerDto {
-  @ApiProperty({
-    example: 'Frontend-разработка',
-    maxLength: 200,
-  })
-  title: string;
-
-  @ApiProperty({
-    example: 'Создание современных пользовательских интерфейсов',
-    required: false,
-  })
-  description?: string;
-
-  @ApiProperty({
-    example: ['/file_1712876543210_k8a1bc2d3e.png'],
-    type: [String],
-    required: false,
-  })
-  images?: string[];
-
-  @ApiProperty({
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    format: 'uuid',
-  })
-  categoryId: string;
-}
-
-class UpdateSkillBodySwaggerDto {
-  @ApiProperty({
-    example: 'Backend-разработка',
-    maxLength: 200,
-    required: false,
-  })
-  title?: string;
-
-  @ApiProperty({
-    example: 'Разработка серверной части приложений',
-    required: false,
-  })
-  description?: string;
-
-  @ApiProperty({
-    example: ['/file_1712876543210_k8a1bc2d3e.png'],
-    type: [String],
-    required: false,
-  })
-  images?: string[];
-
-  @ApiProperty({
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    format: 'uuid',
-    required: false,
-  })
-  categoryId?: string;
-}
-
 class DeleteSkillResponseSwaggerDto {
   @ApiProperty({
     example: 'Skill deleted successfully',
@@ -195,23 +140,6 @@ function ApiSkillsIdParam() {
   );
 }
 
-function ApiSkillsPaginationQuery() {
-  return applyDecorators(
-    ApiQuery({
-      name: 'page',
-      required: false,
-      example: 1,
-      description: 'Номер страницы',
-    }),
-    ApiQuery({
-      name: 'limit',
-      required: false,
-      example: 10,
-      description: 'Количество элементов на странице, максимум 50',
-    }),
-  );
-}
-
 function ApiSkillFavoriteProtected() {
   return applyDecorators(
     ApiBearerAuth(),
@@ -228,7 +156,6 @@ export function ApiSkillsController() {
 export function ApiSkillsFindAll() {
   return applyDecorators(
     ApiOperation({ summary: 'Получить список навыков' }),
-    ApiSkillsPaginationQuery(),
     ApiOkResponse({
       description: 'Список навыков с пагинацией',
       type: FindAllSkillsResponseSwaggerDto,
@@ -242,7 +169,7 @@ export function ApiSkillsFindAll() {
 export function ApiSkillsCreate() {
   return applyDecorators(
     ApiOperation({ summary: 'Создать навык' }),
-    ApiBody({ type: CreateSkillBodySwaggerDto }),
+    ApiBody({ type: CreateSkillDto }),
     ApiCreatedResponse({
       description: 'Навык успешно создан',
       type: SkillResponseSwaggerDto,
@@ -257,7 +184,7 @@ export function ApiSkillsUpdate() {
   return applyDecorators(
     ApiOperation({ summary: 'Обновить навык' }),
     ApiSkillsIdParam(),
-    ApiBody({ type: UpdateSkillBodySwaggerDto }),
+    ApiBody({ type: UpdateSkillDto }),
     ApiOkResponse({
       description: 'Навык успешно обновлен',
       type: SkillResponseSwaggerDto,

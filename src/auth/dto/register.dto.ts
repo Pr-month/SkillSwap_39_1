@@ -63,7 +63,6 @@ export class RegisterDto {
     example: '1998-05-20T00:00:00.000Z',
     format: 'date-time',
   })
-  @Type(() => Date)
   @IsDate()
   @MinDate(new Date(1900, 0, 1))
   @MaxDate(() => new Date())
