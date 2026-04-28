@@ -16,13 +16,23 @@ import { CreateRequestDto } from './dto/create-request.dto';
 import { FindRequestsQueryDto } from './dto/find-requests-query.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { RequestsService } from './requests.service';
+import {
+  ApiRequestsController,
+  ApiRequestsCreate,
+  ApiRequestsFindIncoming,
+  ApiRequestsFindOutgoing,
+  ApiRequestsRemove,
+  ApiRequestsUpdate,
+} from './requests.swagger';
 
 @UseGuards(JwtAuthGuard)
+@ApiRequestsController()
 @Controller('requests')
 @UseGuards(JwtAuthGuard)
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
+  @ApiRequestsFindOutgoing()
   @Get('outgoing')
   findOutgoing(@Req() req: AuthRequest, @Query() query: FindRequestsQueryDto) {
     return this.requestsService.findOutgoing(
@@ -32,6 +42,7 @@ export class RequestsController {
     );
   }
 
+  @ApiRequestsFindIncoming()
   @Get('incoming')
   findIncoming(@Req() req: AuthRequest, @Query() query: FindRequestsQueryDto) {
     return this.requestsService.findIncoming(
@@ -41,11 +52,13 @@ export class RequestsController {
     );
   }
 
+  @ApiRequestsCreate()
   @Post()
   create(@Req() req: AuthRequest, @Body() dto: CreateRequestDto) {
     return this.requestsService.create(req.user.sub, dto);
   }
 
+  @ApiRequestsUpdate()
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -55,6 +68,7 @@ export class RequestsController {
     return this.requestsService.update(id, req.user.sub, dto);
   }
 
+  @ApiRequestsRemove()
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.requestsService.remove(id, req.user.sub);
