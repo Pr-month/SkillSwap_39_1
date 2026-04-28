@@ -13,6 +13,9 @@ import { Skill } from '../skills/entities/skill.entity';
 import { Request } from './entities/request.entity';
 import { RequestStatus } from '../common/enums/request-status.enum';
 import { In } from 'typeorm';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { UsersService } from '../users/users.service';
+import { SkillsService } from '../skills/skills.service';
 
 type RequestsRepositoryMock = {
   findAndCount: jest.Mock<Promise<[Request[], number]>, [unknown]>;
@@ -30,11 +33,24 @@ type SkillsRepositoryMock = {
   findOne: jest.Mock<Promise<Skill | null>, [unknown]>;
 };
 
+type NotificationsGatewayMock = {
+  notifyUser: jest.Mock<Promise<void>, [string, unknown]>;
+};
+
+type UsersServiceMock = {
+  findOne: jest.Mock<Promise<User>, [string]>;
+};
+
+type SkillsServiceMock = Record<string, never>;
+
 describe('RequestsService', () => {
   let service: RequestsService;
   let requestsRepository: RequestsRepositoryMock;
   let usersRepository: UsersRepositoryMock;
   let skillsRepository: SkillsRepositoryMock;
+  let notificationsGateway: NotificationsGatewayMock;
+  let usersService: UsersServiceMock;
+  let skillsService: SkillsServiceMock;
 
   const mockRequests = [
     {
@@ -46,9 +62,9 @@ describe('RequestsService', () => {
       requestedSkillId: '4',
       isRead: true,
       sender: { id: '1' } as User,
-      receiver: { id: '2' } as User,
+      receiver: { id: '2', name: 'test2' } as User,
       offeredSkill: { id: '3' } as Skill,
-      requestedSkill: { id: '4' } as Skill,
+      requestedSkill: { id: '4', title: 'Backend' } as Skill,
     },
     {
       id: '2',
@@ -58,7 +74,7 @@ describe('RequestsService', () => {
       offeredSkillId: '4',
       requestedSkillId: '3',
       isRead: false,
-      sender: { id: '2' } as User,
+      sender: { id: '2', name: 'test2' } as User,
       receiver: { id: '1' } as User,
       offeredSkill: { id: '4' } as Skill,
       requestedSkill: { id: '3' } as Skill,
@@ -122,9 +138,31 @@ describe('RequestsService', () => {
       findOne: jest.fn<Promise<Skill | null>, [unknown]>(),
     };
 
+    notificationsGateway = {
+      notifyUser: jest.fn<Promise<void>, [string, unknown]>(),
+    };
+
+    usersService = {
+      findOne: jest.fn<Promise<User>, [string]>(),
+    };
+
+    skillsService = {};
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RequestsService,
+        {
+          provide: NotificationsGateway,
+          useValue: notificationsGateway,
+        },
+        {
+          provide: UsersService,
+          useValue: usersService,
+        },
+        {
+          provide: SkillsService,
+          useValue: skillsService,
+        },
         {
           provide: getRepositoryToken(Request),
           useValue: requestsRepository,
@@ -495,6 +533,8 @@ describe('RequestsService', () => {
       skillsRepository.findOne
         .mockResolvedValueOnce(mockSkills[1]) //Первый вызов метода репозитория в create вернет запрашиваемый навык
         .mockResolvedValueOnce(mockSkills[0]); //Предлагаемый навык
+      usersService.findOne.mockResolvedValue(mockUsers[0]);
+      notificationsGateway.notifyUser.mockResolvedValue(undefined);
 
       //пусть 1 объект из mockRequests соответствует такому запросу
       requestsRepository.create.mockReturnValue(mockRequests[0]);
@@ -526,6 +566,8 @@ describe('RequestsService', () => {
         requestedSkill: { id: '4' } as Skill,
       } as Request;
       skillsRepository.findOne.mockResolvedValueOnce(mockSkills[1]);
+      usersService.findOne.mockResolvedValue(mockUsers[0]);
+      notificationsGateway.notifyUser.mockResolvedValue(undefined);
 
       requestsRepository.create.mockReturnValue(reqestMock);
       requestsRepository.save.mockResolvedValue(reqestMock);
@@ -586,6 +628,7 @@ describe('RequestsService', () => {
 
     it('проверка успешного ответа', async () => {
       requestsRepository.findOne.mockResolvedValue(mockRequests[0]);
+      notificationsGateway.notifyUser.mockResolvedValue(undefined);
       const updateMockRequest = {
         ...mockRequests[0],
         status: dtoMock.status,
