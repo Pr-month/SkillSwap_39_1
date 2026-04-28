@@ -8,10 +8,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import { WsJwtGuard } from '../auth/guards/ws-jwt-guard';
 import { NotificationPayloadDto } from './dto/notification-payload.dto';
+import { JwtPayload } from '../auth/types/types';
 
 interface SocketWithUser extends Socket {
   data: {
-    user?: { sub: string };
+    user?: JwtPayload;
     userId?: string;
   };
 }
@@ -31,8 +32,8 @@ export class NotificationsGateway
 
   async handleConnection(client: SocketWithUser) {
     try {
-      await this.wsJwtGuard.validateToken(client);
-      const userId = client.data.user?.sub;
+      const user = await this.wsJwtGuard.validateToken(client);
+      const userId = user.sub;
 
       if (!userId) {
         console.log(
@@ -42,6 +43,7 @@ export class NotificationsGateway
         return;
       }
 
+      client.data.user = user;
       client.data.userId = userId;
 
       await client.join(userId);
@@ -58,7 +60,7 @@ export class NotificationsGateway
     }
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: SocketWithUser) {
     const userId = client.data.userId;
     if (userId) {
       console.log(`Пользователь ${userId} был отключен от уведомлений`);
@@ -69,10 +71,11 @@ export class NotificationsGateway
   handleConnect(client: SocketWithUser) {
     const userId = client.data.user?.sub;
     if (userId) {
-      client.join(userId);
+      void client.join(userId);
     }
   }
-  async notifyUser(userId: string, payload: NotificationPayloadDto) {
+
+  notifyUser(userId: string, payload: NotificationPayloadDto) {
     this.server.to(userId).emit('notificateNewRequest', {
       ...payload,
       message: this.getNotificationMessage(payload),
