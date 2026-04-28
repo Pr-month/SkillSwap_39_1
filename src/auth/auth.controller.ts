@@ -25,6 +25,7 @@ interface AccessRequest extends Request {
   user: {
     sub: string;
     email: string;
+    role: string;
   };
 }
 
@@ -32,6 +33,7 @@ interface RefreshRequest extends Request {
   user: {
     sub: string;
     email: string;
+    role: string;
     refreshToken: string;
   };
 }
@@ -67,10 +69,6 @@ export class AuthController {
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   refresh(@Req() req: RefreshRequest) {
-    return this.authService.refreshTokens(
-      req.user.sub,
-      req.user.email,
-      req.user.refreshToken,
-    );
+    return this.authService.refreshTokens(req.user.sub, req.user.refreshToken);
   }
 }

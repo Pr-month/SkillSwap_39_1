@@ -56,12 +56,16 @@ export class AuthService {
 
       const savedUser = await this.usersRepository.save(user);
 
-      const tokens = await this.generateTokens(savedUser.id, savedUser.email);
+      const tokens = await this.generateTokens(
+        savedUser.id,
+        savedUser.email,
+        savedUser.role,
+      );
       await this.updateRefreshToken(savedUser.id, tokens.refreshToken);
 
       return tokens;
     } catch (error) {
-      if (error.code === '23505') {
+      if (this.isDatabaseErrorWithCode(error, '23505')) {
         throw new ConflictException(
           'Пользователь с таким email уже существует',
         );
@@ -88,7 +92,7 @@ export class AuthService {
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
@@ -102,7 +106,7 @@ export class AuthService {
     return { message: 'Выход выполнен успешно' };
   }
 
-  async refreshTokens(userId: string, email: string, refreshToken: string) {
+  async refreshTokens(userId: string, refreshToken: string) {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
     });
@@ -120,14 +124,18 @@ export class AuthService {
       throw new UnauthorizedException('Неверный refresh token');
     }
 
-    const tokens = await this.generateTokens(userId, email);
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.updateRefreshToken(userId, tokens.refreshToken);
 
     return tokens;
   }
 
-  private async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  private async generateTokens(
+    userId: string,
+    email: string,
+    role: User['role'],
+  ) {
+    const payload = { sub: userId, email, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
@@ -182,5 +190,16 @@ export class AuthService {
         resolve(originalHash === derivedKey.toString('hex'));
       });
     });
+  }
+
+  private isDatabaseErrorWithCode(
+    error: unknown,
+    code: string,
+  ): error is { code: string } {
+    if (typeof error !== 'object' || error === null || !('code' in error)) {
+      return false;
+    }
+
+    return error.code === code;
   }
 }

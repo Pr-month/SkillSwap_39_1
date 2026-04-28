@@ -176,7 +176,7 @@ describe('AuthService', () => {
 
     expect(jwtService.signAsync).toHaveBeenNthCalledWith(
       1,
-      { sub: 'new-user-id', email: dto.email },
+      { sub: 'new-user-id', email: dto.email, role: savedUser.role },
       {
         secret: jwtSettings.secret,
         expiresIn: jwtSettings.expiresIn,
@@ -185,7 +185,7 @@ describe('AuthService', () => {
 
     expect(jwtService.signAsync).toHaveBeenNthCalledWith(
       2,
-      { sub: 'new-user-id', email: dto.email },
+      { sub: 'new-user-id', email: dto.email, role: savedUser.role },
       {
         secret: jwtSettings.refreshSecret,
         expiresIn: jwtSettings.refreshExpiresIn,
@@ -247,9 +247,72 @@ describe('AuthService', () => {
       where: { email: user.email },
     });
 
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+      1,
+      { sub: user.id, email: user.email, role: user.role },
+      {
+        secret: jwtSettings.secret,
+        expiresIn: jwtSettings.expiresIn,
+      },
+    );
+
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+      2,
+      { sub: user.id, email: user.email, role: user.role },
+      {
+        secret: jwtSettings.refreshSecret,
+        expiresIn: jwtSettings.refreshExpiresIn,
+      },
+    );
+
     expect(usersRepository.update).toHaveBeenCalledWith(user.id, {
       refreshToken: 'hashed-refresh-token',
     });
+  });
+
+  it('refreshTokens должен генерировать токены с ролью пользователя из базы данных', async () => {
+    const user = createUser({
+      refreshToken: 'stored-refresh-token',
+    });
+
+    usersRepository.findOne.mockResolvedValue(user);
+    jest.spyOn(service as any, 'verifyData').mockResolvedValue(true);
+    jest
+      .spyOn(service as any, 'hashData')
+      .mockResolvedValue('hashed-refresh-token');
+    jwtService.signAsync
+      .mockResolvedValueOnce('access-token')
+      .mockResolvedValueOnce('refresh-token');
+    usersRepository.update.mockResolvedValue({ affected: 1 });
+
+    await expect(
+      service.refreshTokens(user.id, 'plain-refresh-token'),
+    ).resolves.toEqual({
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+    });
+
+    expect(usersRepository.findOne).toHaveBeenCalledWith({
+      where: { id: user.id },
+    });
+
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+      1,
+      { sub: user.id, email: user.email, role: user.role },
+      {
+        secret: jwtSettings.secret,
+        expiresIn: jwtSettings.expiresIn,
+      },
+    );
+
+    expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+      2,
+      { sub: user.id, email: user.email, role: user.role },
+      {
+        secret: jwtSettings.refreshSecret,
+        expiresIn: jwtSettings.refreshExpiresIn,
+      },
+    );
   });
 
   it('logout должен очищать refresh token', async () => {
