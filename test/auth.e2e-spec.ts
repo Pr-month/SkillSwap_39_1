@@ -4,7 +4,7 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { Reflector } from '@nestjs/core';
@@ -12,10 +12,23 @@ import { RegisterDto } from 'src/auth/dto/register.dto';
 import { Gender } from 'src/common/enums/gender.enum';
 import { DataSource } from 'typeorm';
 
+type AuthTokensResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+type ErrorResponse = {
+  message: string;
+  statusCode?: number;
+};
+
+function getTypedBody<T>(response: Response): T {
+  return response.body as T;
+}
+
 describe('AuthController (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
-  let accessToken: string;
   let refreshToken: string;
 
   const userDto: RegisterDto = {
@@ -62,12 +75,10 @@ describe('AuthController (e2e)', () => {
         .post('/auth/register')
         .send(userDto)
         .expect(201);
+      const body = getTypedBody<AuthTokensResponse>(res);
 
-      expect(res.body).toHaveProperty('accessToken');
-      expect(res.body).toHaveProperty('refreshToken');
-
-      accessToken = res.body.accessToken;
-      refreshToken = res.body.refreshToken;
+      expect(body.accessToken).toBeDefined();
+      expect(body.refreshToken).toBeDefined();
     });
 
     it('Регистрация существующего пользователя. Статус 409', async () => {
@@ -77,9 +88,10 @@ describe('AuthController (e2e)', () => {
         .post('/auth/register')
         .send(userDto)
         .expect(409);
+      const body = getTypedBody<ErrorResponse>(res);
 
       expect(res.body).toHaveProperty('message');
-      expect(res.body.statusCode).toBe(409);
+      expect(body.statusCode).toBe(409);
     });
 
     it('Регистрация пользователя c невалидным паролем. Статус 400', async () => {
@@ -89,7 +101,7 @@ describe('AuthController (e2e)', () => {
         password: 'weak',
       };
 
-      const res = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/auth/register')
         .send(invalidUser)
         .expect(400);
@@ -101,7 +113,7 @@ describe('AuthController (e2e)', () => {
         email: 'email',
       };
 
-      const res = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post('/auth/register')
         .send(invalidUser)
         .expect(400);
@@ -121,9 +133,10 @@ describe('AuthController (e2e)', () => {
           password: userDto.password,
         })
         .expect(200);
+      const body = getTypedBody<AuthTokensResponse>(res);
 
-      expect(res.body).toHaveProperty('accessToken');
-      expect(res.body).toHaveProperty('refreshToken');
+      expect(body.accessToken).toBeDefined();
+      expect(body.refreshToken).toBeDefined();
     });
 
     it('Аутентификация с некорректным паролем', async () => {
@@ -134,7 +147,9 @@ describe('AuthController (e2e)', () => {
           password: 'password',
         })
         .expect(401);
-      expect(res.body.message).toBe('Неверный email или пароль');
+      const body = getTypedBody<ErrorResponse>(res);
+
+      expect(body.message).toBe('Неверный email или пароль');
     });
 
     it('Аутентификация с некорректной почтой', async () => {
@@ -145,8 +160,9 @@ describe('AuthController (e2e)', () => {
           password: 'Test123!@#',
         })
         .expect(401);
+      const body = getTypedBody<ErrorResponse>(res);
 
-      expect(res.body.message).toBe('Неверный email или пароль');
+      expect(body.message).toBe('Неверный email или пароль');
     });
   });
 
@@ -164,8 +180,9 @@ describe('AuthController (e2e)', () => {
           password: userDto.password,
         })
         .expect(200);
+      const tokens = getTypedBody<AuthTokensResponse>(loginRes);
 
-      refreshToken = loginRes.body.refreshToken;
+      refreshToken = tokens.refreshToken;
       expect(refreshToken).toBeDefined();
     });
 
@@ -174,8 +191,9 @@ describe('AuthController (e2e)', () => {
         .post('/auth/logout')
         .set('Authorization', `Bearer ${refreshToken}`)
         .expect(200);
+      const body = getTypedBody<ErrorResponse>(res);
 
-      expect(res.body.message).toBe('Выход выполнен успешно');
+      expect(body.message).toBe('Выход выполнен успешно');
     });
 
     it('Logout без токена', async () => {
@@ -202,8 +220,9 @@ describe('AuthController (e2e)', () => {
           email: userDto.email,
           password: userDto.password,
         });
+      const tokens = getTypedBody<AuthTokensResponse>(loginRes);
 
-      refreshToken = loginRes.body.refreshToken;
+      refreshToken = tokens.refreshToken;
     });
 
     it('Рефреш токена успешный', async () => {
@@ -211,10 +230,10 @@ describe('AuthController (e2e)', () => {
         .post('/auth/refresh')
         .set('Authorization', `Bearer ${refreshToken}`)
         .expect(200);
+      const body = getTypedBody<AuthTokensResponse>(res);
 
-      expect(res.body).toHaveProperty('accessToken');
-      expect(res.body).toHaveProperty('refreshToken');
-      expect(res.body.accessToken).not.toBe(undefined);
+      expect(body.accessToken).toBeDefined();
+      expect(body.refreshToken).toBeDefined();
     });
 
     it('Рефреш без токена', async () => {
