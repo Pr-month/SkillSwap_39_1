@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { AllExceptionFilter } from './common/filters/all-exception.filter';
 import { appConfig, IAppConfig } from './config/app.config';
 
 async function bootstrap() {
@@ -17,6 +18,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.useGlobalFilters(new AllExceptionFilter());
 
   app.useStaticAssets(join(process.cwd(), 'public'));
 
@@ -33,4 +35,4 @@ async function bootstrap() {
   const config = app.get<IAppConfig>(appConfig.KEY);
   await app.listen(config.port);
 }
-bootstrap();
+void bootstrap();
