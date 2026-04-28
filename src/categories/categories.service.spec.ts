@@ -10,7 +10,7 @@ import { CategoriesService } from './categories.service';
 import { Category } from './entities/category.entity';
 
 const createCategory = (overrides: Partial<Category> = {}): Category => ({
-  id: 'category-id',
+  id: '11111111-1111-4111-8111-111111111111',
   name: 'Музыкальные инструменты',
   parentId: null,
   parent: null,
@@ -77,6 +77,7 @@ describe('CategoriesService', () => {
       name: dto.name,
     });
     expect(categoriesRepository.create).toHaveBeenCalledWith({
+      children: [],
       name: dto.name,
       parent: null,
       parentId: null,
@@ -107,9 +108,9 @@ describe('CategoriesService', () => {
       createCategory({
         children: [
           createCategory({
-            id: 'child-id',
+            id: '22222222-2222-4222-8222-222222222222',
             name: 'Игра на барабанах',
-            parentId: 'category-id',
+            parentId: '11111111-1111-4111-8111-111111111111',
           }),
         ],
       }),
@@ -120,9 +121,12 @@ describe('CategoriesService', () => {
     await expect(service.findAll()).resolves.toEqual(categories);
     expect(categoriesRepository.find).toHaveBeenCalledTimes(1);
 
-    const findOptions = categoriesRepository.find.mock.calls[0][0];
+    const [findOptions] = categoriesRepository.find.mock.calls[0] as [
+      FindManyOptions<Category>,
+    ];
 
     expect(findOptions.relations).toEqual({
+      parent: true,
       children: true,
     });
     expect(findOptions.order).toEqual({
@@ -145,11 +149,11 @@ describe('CategoriesService', () => {
     categoriesRepository.save.mockResolvedValue(updatedCategory);
 
     await expect(
-      service.update('category-id', { name: 'Танцы' }),
+      service.update(category.id, { name: 'Танцы' }),
     ).resolves.toEqual(updatedCategory);
 
     expect(categoriesRepository.findOne).toHaveBeenCalledWith({
-      where: { id: 'category-id' },
+      where: { id: category.id },
       relations: ['parent'],
     });
     expect(categoriesRepository.findOneBy).toHaveBeenCalledWith({
@@ -169,10 +173,12 @@ describe('CategoriesService', () => {
   });
 
   it('update должен выбрасывать BadRequestException, если категория назначает себя родителем', async () => {
-    categoriesRepository.findOne.mockResolvedValue(createCategory());
+    const category = createCategory();
+
+    categoriesRepository.findOne.mockResolvedValue(category);
 
     await expect(
-      service.update('category-id', { parentId: 'category-id' }),
+      service.update(category.id, { parentId: category.id }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
@@ -181,7 +187,9 @@ describe('CategoriesService', () => {
     categoriesRepository.findOneBy.mockResolvedValue(null);
 
     await expect(
-      service.update('category-id', { parentId: 'missing-parent-id' }),
+      service.update('11111111-1111-4111-8111-111111111111', {
+        parentId: '33333333-3333-4333-8333-333333333333',
+      }),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -191,7 +199,7 @@ describe('CategoriesService', () => {
     categoriesRepository.findOneBy.mockResolvedValue(category);
     categoriesRepository.remove.mockResolvedValue(category);
 
-    await expect(service.remove('category-id')).resolves.toEqual({
+    await expect(service.remove(category.id)).resolves.toEqual({
       message: 'Категория "Музыкальные инструменты" успешно удалена',
     });
 
@@ -201,8 +209,8 @@ describe('CategoriesService', () => {
   it('remove должен выбрасывать NotFoundException, если категория не найдена', async () => {
     categoriesRepository.findOneBy.mockResolvedValue(null);
 
-    await expect(service.remove('missing-id')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.remove('33333333-3333-4333-8333-333333333333'),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

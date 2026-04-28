@@ -66,7 +66,6 @@ export class RegisterDto {
   @IsDate()
   @MinDate(new Date(1900, 0, 1))
   @MaxDate(() => new Date())
-  @Type(() => Date)
   birthdate: Date;
 
   // Город
