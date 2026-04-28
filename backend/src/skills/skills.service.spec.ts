@@ -129,7 +129,10 @@ describe('SkillsService', () => {
     const totalSkillsMock = 20;
 
     it('проверка успешного ответа', async () => {
-      queryBuilder.getManyAndCount.mockResolvedValue([mockSkills, totalSkillsMock]);
+      queryBuilder.getManyAndCount.mockResolvedValue([
+        mockSkills,
+        totalSkillsMock,
+      ]);
 
       const result = await service.findAll(pageQueryMock);
 
