@@ -1,0 +1,91 @@
+@import url('../../../app/styles/variables.css');
+
+.filterSection {
+  margin: 0;
+  width: 100%;
+}
+
+.title {
+  color: var(--text, #253017);
+  padding-block-end: 20px;
+  margin: 0;
+}
+
+.checkboxDropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.categoryItem {
+  margin: 0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.categoryHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.categoryChevron {
+  opacity: 0;
+  width: 24px;
+  height: 24px;
+  mask-image: url('../../../app/assets/static/images/icons/chevron-down.svg');
+  mask-repeat: no-repeat;
+  background-color: var(--text, #253017);
+  transition: all 0.2s ease;
+}
+
+.categoryItem:hover .categoryChevron,
+.categoryItem.expanded .categoryChevron,
+.category_chevron:hover {
+  opacity: 1;
+}
+
+.categoryItem.expanded .categoryChevron {
+  transform: rotate(180deg);
+}
+
+.simpleContainer {
+  padding: 4px 0;
+}
+
+.subcategories {
+  margin-inline-start: 32px;
+  margin-block-start: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.showMoreContainer {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: inherit;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--textlink-button-pressed, #508826);
+}
+
+.chevron {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  mask-image: url('../../../app/assets/static/images/icons/chevron-down.svg');
+  mask-repeat: no-repeat;
+  background-color: var(--text, #253017);
+  transition: transform 0.2s ease;
+}
+
+.rotated {
+  transform: rotate(180deg);
+}

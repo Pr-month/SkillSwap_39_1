@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+
+    "types": ["vite/client", "jest", "@testing-library/jest-dom"]
+  },
+  "include": ["vite.config.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "jest.config.ts"]
+}

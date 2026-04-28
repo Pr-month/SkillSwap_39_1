@@ -1,0 +1,34 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.input {
+  border: 1px #69735d solid;
+  border-radius: 16px;
+  line-height: 24px;
+  padding: 12px 20px;
+}
+
+.inputError {
+  border-color: var(--color-error);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.inputWithIcon {
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 24px 24px;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 12px;
+  line-height: 16px;
+}

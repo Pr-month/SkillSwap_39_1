@@ -1,0 +1,9 @@
+.likeButton {
+  background-color: #000;
+  mask: url('@/app/assets/static/images/icons/like.svg') no-repeat center;
+}
+
+.likeButtonActive {
+  background-color: var(--user-card-like-active-hover, #abd27a);
+  mask: url('@/app/assets/static/images/icons/isLike.svg') no-repeat center;
+}

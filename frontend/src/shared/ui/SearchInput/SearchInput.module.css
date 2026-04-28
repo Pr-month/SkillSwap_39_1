@@ -1,0 +1,41 @@
+/* stylelint-disable property-no-vendor-prefix */
+.searchContainer {
+  position: relative;
+  width: 100%;
+  max-width: 515px;
+  display: flex;
+  padding-left: 6px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: #000; /* Цвет иконки */
+  mask: url('@/app/assets/static/images/icons/search.svg') no-repeat center;
+  -webkit-mask: url('@/app/assets/static/images/icons/search.svg') no-repeat center;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #4caf50;
+}
+
+/* Мобильная версия (<= 768px) */
+@media (max-width: 768px) {
+  .input {
+    min-width: 300px;
+  }
+}
