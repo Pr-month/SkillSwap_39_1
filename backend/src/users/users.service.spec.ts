@@ -102,16 +102,18 @@ describe('UsersService', () => {
       usersRepository.count.mockResolvedValue(mockTotal);
       usersRepository.find.mockResolvedValue(mockUsers);
 
-      const paginationData: GetUsersQueryDto = { page: 2, limit: 10 };
+      const page = 2;
+      const limit = 10;
+      const paginationData: GetUsersQueryDto = { page, limit };
       const expectedResMeta = {
-        page: paginationData.page,
-        limit: paginationData.limit,
-        skip: (paginationData.page - 1) * paginationData.limit,
-        take: paginationData.limit,
+        page,
+        limit,
+        skip: (page - 1) * limit,
+        take: limit,
         total: mockTotal,
-        totalPages: mockTotal / paginationData.limit,
-        hasNext: paginationData.page < mockTotal / paginationData.limit,
-        hasPrev: paginationData.page > 1,
+        totalPages: mockTotal / limit,
+        hasNext: page < mockTotal / limit,
+        hasPrev: page > 1,
       };
 
       const result = await service.findAll(paginationData);
@@ -122,8 +124,15 @@ describe('UsersService', () => {
       expect(usersRepository.count).toHaveBeenCalledWith({ where: {} });
       expect(usersRepository.find).toHaveBeenCalledWith({
         where: {},
-        skip: (paginationData.page - 1) * paginationData.limit,
-        take: paginationData.limit,
+        relations: [
+          'skills',
+          'skills.category',
+          'skills.category.parent',
+          'wantToLearn',
+          'wantToLearn.parent',
+        ],
+        skip: (page - 1) * limit,
+        take: limit,
         order: { name: 'ASC' },
       });
     });
@@ -151,6 +160,13 @@ describe('UsersService', () => {
       expect(usersRepository.count).toHaveBeenCalledWith({ where: {} });
       expect(usersRepository.find).toHaveBeenCalledWith({
         where: {},
+        relations: [
+          'skills',
+          'skills.category',
+          'skills.category.parent',
+          'wantToLearn',
+          'wantToLearn.parent',
+        ],
         skip: 0,
         take: 10,
         order: { name: 'ASC' },
@@ -199,6 +215,13 @@ describe('UsersService', () => {
       expect(result).toEqual(mockUsers[0]);
       expect(usersRepository.findOne).toHaveBeenCalledWith({
         where: { id: '1' },
+        relations: [
+          'skills',
+          'skills.category',
+          'skills.category.parent',
+          'wantToLearn',
+          'wantToLearn.parent',
+        ],
       });
     });
 
@@ -247,6 +270,13 @@ describe('UsersService', () => {
       });
       expect(usersRepository.findOne).toHaveBeenNthCalledWith(2, {
         where: { id: '1' },
+        relations: [
+          'skills',
+          'skills.category',
+          'skills.category.parent',
+          'wantToLearn',
+          'wantToLearn.parent',
+        ],
       });
     });
 

@@ -15,6 +15,14 @@ import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class UsersService {
+  private readonly userRelations = [
+    'skills',
+    'skills.category',
+    'skills.category.parent',
+    'wantToLearn',
+    'wantToLearn.parent',
+  ] as const;
+
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -48,6 +56,7 @@ export class UsersService {
 
     const users = await this.usersRepository.find({
       where,
+      relations: [...this.userRelations],
       skip,
       take,
       order: {
@@ -77,6 +86,7 @@ export class UsersService {
 
     const user = await this.usersRepository.findOne({
       where: { id },
+      relations: [...this.userRelations],
     });
 
     if (!user) {
