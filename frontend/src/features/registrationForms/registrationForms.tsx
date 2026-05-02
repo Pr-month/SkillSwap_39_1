@@ -5,13 +5,11 @@ import styles from './registrationForms.module.css';
 import { Button } from '@/shared/ui/button/button';
 import { useNavigate } from 'react-router-dom';
 import { RegisterStepTwo } from '@/pages/registerStepTwo/registerStepTwo';
-import { RegisterStepThree } from '@/pages/registerStepThree/registerStepThree';
 
 const RegistrationForms = ({ isRegister = true }) => {
   const forms = [
     <AuthFormContainer key="step1" isFirstStage={true} />,
     <RegisterStepTwo key="step2" />,
-    <RegisterStepThree key="step3" />,
   ];
 
   const navigate = useNavigate();

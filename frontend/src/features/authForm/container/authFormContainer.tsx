@@ -1,19 +1,24 @@
 import { PAGE_TEXTS } from '@/features/authForm/ui/authForm';
 import { AuthFormUI } from '@/features/authForm/ui/authFormUI';
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from '@/services/store/store';
+import { useDispatch, useSelector } from '@/services/store/store';
 import { stepActions } from '@/services/slices/stepSlice';
 import { loginUser } from '@/services/thunk/authUser';
 import { updateStepOneData } from '@/services/slices/registrationSlice';
+import {
+  isStrongPassword,
+  STRONG_PASSWORD_HINT,
+} from '@/shared/lib/registration';
 
 export const AuthFormContainer = ({ isFirstStage = true }) => {
+  const defaultStepOneData = useSelector(state => state.register.stepOneData);
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(defaultStepOneData.email ?? '');
+  const [password, setPassword] = useState(defaultStepOneData.password ?? '');
   const [errors, setErrors] = useState({
     email: '',
     password: '',
-    passwordIsFirstStage: 'Пароль должен содержать не менее 8 знаков',
+    passwordIsFirstStage: STRONG_PASSWORD_HINT,
     form: '',
   });
   const [touched, setTouched] = useState({
@@ -31,19 +36,24 @@ export const AuthFormContainer = ({ isFirstStage = true }) => {
     return '';
   };
 
-  const validatePassword = (value: string) => {
-    if (!value.trim()) return 'Поле Пароль обязательно для заполнения';
-    if (value.length < 8) return 'Пароль должен содержать минимум 8 символов';
-    return '';
-  };
+  const validatePassword = useCallback(
+    (value: string) => {
+      if (!value.trim()) return 'Поле Пароль обязательно для заполнения';
+      if (isFirstStage && !isStrongPassword(value)) return STRONG_PASSWORD_HINT;
+      return '';
+    },
+    [isFirstStage],
+  );
 
   const validateField = useCallback(() => {
     const newErrors = {
       email: touched.email ? validateEmail(email) : '',
       password: touched.password ? validatePassword(password) : '',
-      passwordIsFirstStage: !validatePassword(password)
-        ? 'Надёжный'
-        : 'Пароль должен содержать не менее 8 знаков',
+      passwordIsFirstStage: !isFirstStage
+        ? ''
+        : !password.trim() || validatePassword(password)
+          ? STRONG_PASSWORD_HINT
+          : 'Надёжный',
       form: errors.form,
     };
 
@@ -64,7 +74,15 @@ export const AuthFormContainer = ({ isFirstStage = true }) => {
         form: '',
       });
     }
-  }, [email, password, touched.email, touched.password, errors.form]);
+  }, [
+    email,
+    password,
+    touched.email,
+    touched.password,
+    errors.form,
+    isFirstStage,
+    validatePassword,
+  ]);
 
   useEffect(() => {
     if (touched.email || touched.password) {

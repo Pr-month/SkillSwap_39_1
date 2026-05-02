@@ -16,8 +16,8 @@ const mockState: RootState = {
       birthdate: undefined,
       gender: undefined,
       city: undefined,
-      categories: undefined,
-      subcategories: undefined,
+      about: undefined,
+      categoryId: undefined,
       avatar: undefined,
     },
     stepThreeData: {

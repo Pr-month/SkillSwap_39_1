@@ -226,10 +226,10 @@ export const RegisterStepThree: FC = () => {
             )}
           />
           <div className={styles.buttonContainer}>
-            <Button type="quaternary" onClick={handleBack}>
+            <Button type="quaternary" onClick={handleBack} htmlType="button">
               Назад
             </Button>
-            <Button type="primary" onClick={handleSubmit(submitForm)}>
+            <Button type="primary" onClick={handleSubmit(submitForm)} htmlType="submit">
               Продолжить
             </Button>
           </div>

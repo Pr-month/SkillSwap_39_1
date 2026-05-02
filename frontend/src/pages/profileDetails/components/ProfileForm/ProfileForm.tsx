@@ -6,12 +6,28 @@ import { userSliceSelectors, userSliceActions } from '@/services/slices/authSlic
 import { Button } from '@/shared/ui/button/button';
 import { russianCities } from '@/shared/lib/cities';
 import { updateProfileApi } from '@/api/skillSwapApi';
+import {
+  STRONG_PASSWORD_HINT,
+  STRONG_PASSWORD_REGEX,
+} from '@/shared/lib/registration';
 import * as yup from 'yup';
 import styles from './ProfileForm.module.css';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-type GenderType = 'Мужской' | 'Женский';
+type ProfileGender = 'male' | 'female' | 'unknown';
+
+const normalizeStoredGender = (gender?: string): ProfileGender => {
+  if (gender === 'Мужской' || gender === 'male') {
+    return 'male';
+  }
+
+  if (gender === 'Женский' || gender === 'female') {
+    return 'female';
+  }
+
+  return 'unknown';
+};
 
 const formatDateForInput = (dateString?: string) => {
   if (!dateString) return '';
@@ -63,10 +79,7 @@ const passwordSchema = yup
   .string()
   .required('Пароль обязателен')
   .min(8, 'Пароль должен содержать минимум 8 символов')
-  .matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
-    'Пароль должен содержать хотя бы одну заглавную букву, одну строчную букву и одну цифру',
-  );
+  .matches(STRONG_PASSWORD_REGEX, STRONG_PASSWORD_HINT);
 
 export function ProfileForm() {
   const { login } = useAuth();
@@ -80,9 +93,9 @@ export function ProfileForm() {
     email: registrationData?.email || user?.email || '',
     name: registrationData?.name || user?.name || '',
     birthDate: formatDateForInput(registrationData?.birthdate || user?.birthdayDate) || '',
-    gender: (registrationData?.gender === 'Мужской' ? 'male' : 'female') as 'male' | 'female',
+    gender: normalizeStoredGender(registrationData?.gender || user?.gender),
     city: registrationData?.city || user?.city || 'Москва',
-    about: registrationData?.description || user?.description || '',
+    about: registrationData?.about || registrationData?.description || user?.description || '',
     avatar: registrationData?.avatar || user?.image || '',
   });
 
@@ -172,8 +185,6 @@ export function ProfileForm() {
       setErrors({});
       setIsLoading(true);
 
-      const gender: GenderType = formData.gender === 'male' ? 'Мужской' : 'Женский';
-
       const updatedUser = {
         id: user?._id || registrationData?.userId,
         name: formData.name,
@@ -190,9 +201,9 @@ export function ProfileForm() {
         ...registrationData,
         name: formData.name,
         birthdate: new Date(formData.birthDate).toISOString(),
-        gender,
+        gender: formData.gender,
         city: formData.city,
-        description: formData.about,
+        about: formData.about,
         avatar: formData.avatar,
       };
       localStorage.setItem('registrationData', JSON.stringify(updatedRegistrationData));
@@ -201,8 +212,10 @@ export function ProfileForm() {
         updateStepTwoData({
           name: formData.name,
           birthdate: new Date(formData.birthDate).toISOString(),
-          gender,
+          gender: formData.gender,
           city: formData.city,
+          about: formData.about,
+          avatar: formData.avatar,
         }),
       );
 
@@ -220,7 +233,7 @@ export function ProfileForm() {
       const response = await updateProfileApi({
         name: formData.name,
         birthdate: new Date(formData.birthDate).toISOString(),
-        gender,
+        gender: formData.gender,
         city: formData.city,
         description: formData.about,
       });
@@ -256,9 +269,10 @@ export function ProfileForm() {
     formData.name !== (registrationData?.name || user?.name) ||
     formatDateForInput(formData.birthDate) !==
       formatDateForInput(registrationData?.birthdate || user?.birthdayDate) ||
-    formData.gender !== (registrationData?.gender === 'Мужской' ? 'male' : 'female') ||
+    formData.gender !== normalizeStoredGender(registrationData?.gender || user?.gender) ||
     formData.city !== (registrationData?.city || user?.city) ||
-    formData.about !== (registrationData?.description || user?.description) ||
+    formData.about !==
+      (registrationData?.about || registrationData?.description || user?.description) ||
     formData.avatar !== (registrationData?.avatar || user?.image);
 
   return (
@@ -347,6 +361,7 @@ export function ProfileForm() {
                   onChange={handleChange}
                   className={styles.profileInputHalf}
                 >
+                  <option value="unknown">Не указан</option>
                   <option value="female">Женский</option>
                   <option value="male">Мужской</option>
                 </select>
