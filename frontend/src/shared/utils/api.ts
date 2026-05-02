@@ -7,7 +7,7 @@ export const checkResponse = <T>(res: Response): Promise<T> =>
   res.ok ? res.json() : res.json().then(err => Promise.reject(err));
 
 export type TServerResponse<T> = {
-  success: boolean;
+  success?: boolean;
 } & T;
 
 export type TRefreshResponse = TServerResponse<{

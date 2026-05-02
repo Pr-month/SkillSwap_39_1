@@ -3,7 +3,9 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  // Дополнительные поля при необходимости
+  birthdayDate?: string;
+  city?: string;
+  description?: string;
 }
 
 export interface AuthState {

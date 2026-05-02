@@ -43,6 +43,7 @@ export const authSlice = createSlice({
     const handleRejected = (state: AuthState) => {
       state.authStatus = RequestStatus.Failed;
       state.userCheck = true;
+      state.data = null;
     };
 
     const handlelogout = (state: AuthState) => {

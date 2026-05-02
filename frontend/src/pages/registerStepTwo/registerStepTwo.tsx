@@ -1,13 +1,20 @@
-import { getCategoriesApi, uploadFileApi } from '@/api/skillSwapApi';
+import {
+  extractApiErrorMessage,
+  getCategoriesApi,
+  uploadFileApi,
+} from '@/api/skillSwapApi';
 import userIcon from '@/app/assets/static/images/background/user-info.svg';
 import calendarIcon from '@/app/assets/static/images/icons/calendar.svg';
 import plusIcon from '@/app/assets/static/images/icons/add.svg';
 import { RegistrationGender } from '@/entities/auth/model/types';
 import { Category } from '@/entities/category/model/types';
-import { registerUser, TStepTwoData, updateStepTwoData } from '@/services/slices/registrationSlice';
+import {
+  registerUser,
+  TStepTwoData,
+  updateStepTwoData,
+} from '@/services/slices/registrationSlice';
 import { stepActions } from '@/services/slices/stepSlice';
 import { useDispatch, useSelector } from '@/services/store/store';
-import { loginUser } from '@/services/thunk/authUser';
 import { russianCities } from '@/shared/lib/cities';
 import {
   formatBirthdateForApi,
@@ -35,26 +42,6 @@ type RegisterStepTwoFormValues = {
   about: string;
   parentCategoryId: string;
   categoryId: string;
-};
-
-const getErrorMessage = (error: unknown, fallbackMessage: string) => {
-  if (!error || typeof error !== 'object') {
-    return fallbackMessage;
-  }
-
-  if ('message' in error) {
-    const message = error.message;
-
-    if (Array.isArray(message)) {
-      return message.join(', ');
-    }
-
-    if (typeof message === 'string') {
-      return message;
-    }
-  }
-
-  return fallbackMessage;
 };
 
 const getDateFromValue = (value?: string) => {
@@ -252,7 +239,10 @@ export const RegisterStepTwo = () => {
         }
 
         setCategoriesError(
-          getErrorMessage(error, 'Не удалось загрузить категории регистрации'),
+          extractApiErrorMessage(
+            error,
+            'Не удалось загрузить категории регистрации',
+          ),
         );
       } finally {
         if (isMounted) {
@@ -328,7 +318,7 @@ export const RegisterStepTwo = () => {
       });
     } catch (error) {
       setAvatarUploadError(
-        getErrorMessage(error, 'Не удалось загрузить аватар'),
+        extractApiErrorMessage(error, 'Не удалось загрузить аватар'),
       );
     } finally {
       setIsAvatarUploading(false);
@@ -370,18 +360,12 @@ export const RegisterStepTwo = () => {
       setSubmitError(undefined);
       dispatch(updateStepTwoData(preparedStepTwoData));
       await dispatch(registerUser(registrationData)).unwrap();
-      void dispatch(
-        loginUser({
-          email: stepOneData.email,
-          password: stepOneData.password,
-        }),
-      );
       navigate('/register/success', {
         state: { background: location },
       });
     } catch (error) {
       setSubmitError(
-        getErrorMessage(error, 'Не удалось завершить регистрацию'),
+        extractApiErrorMessage(error, 'Не удалось завершить регистрацию'),
       );
     }
   };

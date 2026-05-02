@@ -1,7 +1,6 @@
 import { ProposalPreviewModal } from '@/features/auth/proposalPreviewModal/proposalPreviewModal';
 import { registerUser } from '@/services/slices/registrationSlice';
 import { useDispatch, useSelector } from '@/services/store/store';
-import { loginUser } from '@/services/thunk/authUser';
 import { TeachableSkill } from '@/widgets/skillCard/skillCard';
 import { FC } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -43,16 +42,7 @@ const RegisterPreviewPage: FC = () => {
             ...stepThreeData,
           }),
         )
-          .unwrap()
-          .then(() => {
-            // Вход
-            dispatch(
-              loginUser({
-                email: stepOneData.email || '',
-                password: stepOneData.password || '',
-              }),
-            );
-          });
+          .unwrap();
         navigate('/register/success', {
           state: { background: location },
         });

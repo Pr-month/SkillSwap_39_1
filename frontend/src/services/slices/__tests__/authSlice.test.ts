@@ -112,13 +112,13 @@ describe('authSlice', () => {
     it('should handle logoutUserApi.fulfilled', () => {
       const stateWithUser = {
         ...initialState,
-        mockUser,
+        data: mockUser,
         authStatus: RequestStatus.Success,
         userCheck: true,
       };
       const action = {
         type: 'authUser/logoutUserApi/fulfilled',
-        payload: undefined,
+        payload: { message: 'Выход выполнен успешно' },
         meta: { requestId: '1', arg: undefined },
       };
       const state = authSlice.reducer(stateWithUser, action);
@@ -189,7 +189,7 @@ describe('authSlice', () => {
     it('should handle clearUserData', () => {
       const stateWithUser = {
         ...initialState,
-        mockUser,
+        data: mockUser,
         authStatus: RequestStatus.Success,
         userCheck: true,
       };
