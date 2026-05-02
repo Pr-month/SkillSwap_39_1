@@ -10,14 +10,14 @@ const URL = API_BASE_URL ? `${API_BASE_URL}` : '';
 const checkResponse = <T>(res: Response): Promise<T> =>
   res.ok ? res.json() : res.json().then(err => Promise.reject(err));
 
-const assertSuccess = <T>(response: { success: boolean; data: T }, errorText: string) => {
-  if (!response.success) throw new Error(errorText);
+const assertSuccess = <T>(response: { success?: boolean; data: T }, errorText: string) => {
+  if (response.success === false) throw new Error(errorText);
   return response.data;
 };
 
-type SkillResponse = ServerResponse<Skill[]>;
+type SkillResponse = ServerResponse<Skill[]> | { data: Skill[] };
 
-type UsersResponse = ServerResponse<User[]>;
+type UsersResponse = ServerResponse<User[]> | { data: User[] };
 type AuthResponse = ServerResponse<{ accessToken: string; refreshToken: string }>;
 
 export const getSkillsApi = async () => {

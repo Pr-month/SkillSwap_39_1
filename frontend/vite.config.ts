@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 function excludeStoriesInBuild() {
@@ -21,8 +21,10 @@ function excludeStoriesInBuild() {
   };
 }
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
   const isBuild = command === "build";
+  const env = loadEnv(mode, __dirname, "");
+  const apiTarget = env.VITE_API_URL || "http://localhost:3000";
 
   return {
     plugins: [
@@ -40,9 +42,9 @@ export default defineConfig(({ command }) => {
       port: 8080,
       proxy: {
         '/api': {
-          target: 'http://host.docker.internal:3000',
+          target: apiTarget,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')  // Убирает /api префикс
+          rewrite: (path) => path.replace(/^\/api/, '')
         }
       }
     },
