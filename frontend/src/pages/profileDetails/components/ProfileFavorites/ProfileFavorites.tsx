@@ -1,16 +1,17 @@
 import { useSelector } from '@/services/store/store';
 import { selectLikedItems } from '@/services/selectors/likeSelectors';
+import { selectCatalogItems } from '@/services/selectors/catalogSelectors';
 import { UserCard } from '@/widgets/userCard/userCard';
-import { usersData } from '@/shared/mocks/usersData';
 import { Button } from '@/shared/ui/button/button';
 import { useNavigate } from 'react-router-dom';
 import styles from './ProfileFavorites.module.css';
 
 export function ProfileFavorites() {
   const likedItems = useSelector(selectLikedItems);
+  const catalogUsers = useSelector(selectCatalogItems);
   const navigate = useNavigate();
 
-  const likedUsers = usersData.filter(user => likedItems[user._id]);
+  const likedUsers = catalogUsers.filter(user => likedItems[user._id]);
 
   if (likedUsers.length === 0) {
     return (

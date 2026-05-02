@@ -1,5 +1,3 @@
-import { usersData } from '../mocks/usersData';
-
 export const russianCities = [
   'Москва',
   'Санкт-Петербург',
@@ -320,11 +318,11 @@ export const russianCities = [
   'Жигулёвск',
 ];
 
-export const cities = [...usersData]
-  .sort((a, b) => a.city.localeCompare(b.city))
+export const cities = [...russianCities]
+  .sort((a, b) => a.localeCompare(b))
   .reduce(
     (acc, city) => {
-      acc[city.city] = [city.city];
+      acc[city] = [city];
       return acc;
     },
     {} as { [key: string]: readonly string[] },

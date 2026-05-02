@@ -32,6 +32,7 @@ export const UserCard: React.FC<UserCardProps> = ({
   const navigate = useNavigate();
   const { hasSentRequest } = useExchange();
   const alreadyRequested = hasSentRequest(_id);
+  const hasTeachableSkill = Boolean(canTeach?.name);
   const learnSkill = wantsToLearn.slice(0, 2);
   const moreSkills = wantsToLearn.length - learnSkill.length;
   const isLiked = useSelector(state => selectIsLiked(state, _id));
@@ -68,7 +69,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         <div className={styles.teach}>
           <p className={styles.pointCard}>Может научить:</p>
           <div className={styles.skills}>
-            {canTeach ? <Skill type={canTeach.category}>{canTeach.name}</Skill> : ''}
+            {hasTeachableSkill ? <Skill type={canTeach.category}>{canTeach.name}</Skill> : ''}
           </div>
         </div>
         <div className={styles.teach}>
@@ -87,7 +88,11 @@ export const UserCard: React.FC<UserCardProps> = ({
         </div>
       </div>
       {showDetails &&
-        (alreadyRequested ? (
+        (!hasTeachableSkill ? (
+          <Button type="secondary" disabled>
+            Навык не добавлен
+          </Button>
+        ) : alreadyRequested ? (
           <Button onClick={openProfile} type="secondary">
             <span className={styles.contentClock}>
               <div className={styles.clock} />

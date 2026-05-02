@@ -3,7 +3,12 @@ import { useParams } from 'react-router-dom';
 import SkillCard, { TeachableSkill } from '@/widgets/skillCard/skillCard';
 import SameOffers from '@/widgets/sameOffers/sameOffers';
 import UserInfo from '@/widgets/userInfo/userInfo';
-import { usersData } from '@/shared/mocks/usersData';
+import { useSelector } from '@/services/store/store';
+import {
+  selectCatalogItems,
+  selectCatalogLoading,
+} from '@/services/selectors/catalogSelectors';
+import { userSliceSelectors } from '@/services/slices/authSlice';
 import styles from './skillPage.module.css';
 import { LoginRequiredModal } from '@/features/loginRequiredModal/loginRequiredModal';
 import { AlreadyProposedModal } from '@/features/alreadyProposedModal/alreadyProposedModal';
@@ -11,6 +16,9 @@ import { AlreadyProposedModal } from '@/features/alreadyProposedModal/alreadyPro
 const SkillPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [modalState, setModalState] = useState<'none' | 'login' | 'alreadyProposed'>('none');
+  const catalogUsers = useSelector(selectCatalogItems);
+  const isCatalogLoading = useSelector(selectCatalogLoading);
+  const authorizedUser = useSelector(userSliceSelectors.selectUser);
 
   useEffect(() => {
     if (id) {
@@ -19,10 +27,10 @@ const SkillPage: React.FC = () => {
   }, [id]);
 
   const currentUser = useMemo(() => {
-    return usersData.find(user => user._id === id);
-  }, [id]);
+    return catalogUsers.find(user => user._id === id);
+  }, [catalogUsers, id]);
 
-  const isAuthenticated = true;
+  const isAuthenticated = Boolean(authorizedUser);
 
   const handleExchangeProposal = useCallback(() => {
     if (!isAuthenticated) {
@@ -52,10 +60,13 @@ const SkillPage: React.FC = () => {
   if (!id) {
     return <div className={styles.error}>Неверный ID</div>;
   }
+  if (isCatalogLoading) {
+    return <div className={styles.error}>Загрузка профиля...</div>;
+  }
   if (!currentUser) {
     return <div className={styles.error}>Пользователь не найден</div>;
   }
-  if (!currentUser.canTeach) {
+  if (!currentUser.canTeach?.name) {
     return <div className={styles.error}>Нет доступного навыка</div>;
   }
 
@@ -80,7 +91,7 @@ const SkillPage: React.FC = () => {
             onExchangeClick={handleExchangeProposal}
           />
         </div>
-        <SameOffers currentUser={currentUser} users={usersData} />
+        <SameOffers currentUser={currentUser} users={catalogUsers} />
       </div>
 
       {modalState !== 'none' && renderModal()}

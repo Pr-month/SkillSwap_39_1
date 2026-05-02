@@ -22,7 +22,21 @@ const assertSuccess = <T>(response: { success?: boolean; data: T }, errorText: s
 
 type SkillResponse = ServerResponse<Skill[]> | { data: Skill[] };
 
-type UsersResponse = ServerResponse<User[]> | { data: User[] };
+type BackendCategory = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  parent?: BackendCategory | null;
+};
+
+type BackendUserSkill = {
+  id: string;
+  title: string;
+  description: string | null;
+  images: string[] | null;
+  category: BackendCategory | null;
+};
+
 type BackendUser = {
   id: string;
   name: string;
@@ -33,6 +47,24 @@ type BackendUser = {
   gender: RegistrationGender | null;
   avatar: string | null;
   role: string;
+  skills?: BackendUserSkill[];
+  wantToLearn?: BackendCategory[];
+};
+
+type UsersResponseMeta = {
+  page: number;
+  limit: number;
+  skip: number;
+  take: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+};
+
+type UsersResponse = {
+  data: BackendUser[];
+  meta: UsersResponseMeta;
 };
 type UploadFileResponse = {
   message: string;
@@ -88,6 +120,58 @@ export const extractApiErrorMessage = (
   return fallbackMessage;
 };
 
+const mapCategoryToSkillCategory = (category?: BackendCategory | null) => {
+  if (!category) {
+    return {
+      category: '',
+      subcategory: '',
+      subcategoryId: '',
+    };
+  }
+
+  if (category.parent?.name) {
+    return {
+      category: category.parent.name,
+      subcategory: category.name,
+      subcategoryId: category.id,
+    };
+  }
+
+  return {
+    category: category.name,
+    subcategory: category.name,
+    subcategoryId: category.id,
+  };
+};
+
+const adaptBackendSkillToCustomSkill = (
+  skill?: BackendUserSkill,
+): CustomSkill => {
+  if (!skill) {
+    return createEmptySkill();
+  }
+
+  const categoryInfo = mapCategoryToSkillCategory(skill.category);
+
+  return {
+    ...categoryInfo,
+    name: skill.title,
+    image: skill.images || [],
+    description: skill.description || '',
+    customSkillId: skill.id,
+  } as CustomSkill;
+};
+
+const adaptBackendWantToLearn = (category: BackendCategory) => {
+  const categoryInfo = mapCategoryToSkillCategory(category);
+
+  return {
+    ...categoryInfo,
+    name: categoryInfo.subcategory || categoryInfo.category,
+    customSkillId: category.id,
+  } as Omit<CustomSkill, 'description' | 'image'>;
+};
+
 const adaptBackendUserToUser = (backendUser: BackendUser): User => ({
   _id: backendUser.id,
   name: backendUser.name,
@@ -98,8 +182,8 @@ const adaptBackendUserToUser = (backendUser: BackendUser): User => ({
   description: backendUser.about || '',
   likes: [],
   createdAt: '',
-  canTeach: createEmptySkill(),
-  wantsToLearn: [],
+  canTeach: adaptBackendSkillToCustomSkill(backendUser.skills?.[0]),
+  wantsToLearn: (backendUser.wantToLearn || []).map(adaptBackendWantToLearn),
   email: backendUser.email,
 });
 
@@ -124,9 +208,21 @@ export const getCategoriesApi = async (): Promise<Category[]> => {
 };
 
 export const getUsersApi = async () => {
-  const res = await fetch(`/api/users/all`);
-  const checkedRes = await checkResponse<UsersResponse>(res);
-  return assertSuccess(checkedRes, 'Не удалось получить данные о пользователях');
+  const limit = 50;
+  let page = 1;
+  let hasNext = true;
+  const users: User[] = [];
+
+  while (hasNext) {
+    const res = await fetch(`/api/users?limit=${limit}&page=${page}`);
+    const payload = await checkResponse<UsersResponse>(res);
+
+    users.push(...payload.data.map(adaptBackendUserToUser));
+    hasNext = payload.meta.hasNext;
+    page += 1;
+  }
+
+  return users;
 };
 
 export type LoginData = {
