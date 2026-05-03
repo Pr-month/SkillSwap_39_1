@@ -160,13 +160,6 @@ export const loginUserApi = (data: TLoginData): Promise<TAuthResponse> => {
           ) {
             throw new Error('Неверные учетные данные');
           }
-          users[data.email] = {
-            password: data.password,
-            userData: registerUserinfo,
-          };
-          localStorage.setItem('users', JSON.stringify(users));
-          localStorage.setItem('currentUser', JSON.stringify(registerUserinfo));
-          localStorage.removeItem('registrationData');
 
           const accessToken = generateToken();
           const refreshToken = generateToken();
@@ -175,27 +168,35 @@ export const loginUserApi = (data: TLoginData): Promise<TAuthResponse> => {
           setCookie('accessToken', accessToken);
 
           const newUser: User = {
-            _id: registerUserinfo.userId || '',
+            _id: registerUserinfo.userId || generateToken(),
             email: registerUserinfo.email || '',
             name: registerUserinfo.name || '',
-            gender: registerUserinfo.gender === 'Мужской' ? 'male' : 'female',
+            gender: registerUserinfo.gender || 'unknown',
             city: registerUserinfo.city || '',
             birthdayDate: registerUserinfo.birthdate || '',
-            description: registerUserinfo.description || '',
+            description: registerUserinfo.about || '',
             likes: [],
             createdAt: new Date().toString(),
             canTeach: {
-              category: registerUserinfo.skillCategory || '',
-              subcategory: registerUserinfo.subcategories?.[0] || '',
-              subcategoryId: registerUserinfo.subcategoryId,
-              name: registerUserinfo.skillName || '',
-              description: registerUserinfo.description || '',
-              image: registerUserinfo.images,
-              customSkillId: registerUserinfo.customSkillId,
-            } as CustomSkill,
+              category: '',
+              subcategory: '',
+              subcategoryId: '',
+              name: '',
+              description: '',
+              image: [],
+              customSkillId: '',
+            } as unknown as CustomSkill,
             wantsToLearn: [],
             image: registerUserinfo.avatar || '',
           };
+
+          users[data.email] = {
+            password: data.password,
+            userData: newUser,
+          };
+          localStorage.setItem('users', JSON.stringify(users));
+          localStorage.setItem('currentUser', JSON.stringify(newUser));
+          localStorage.removeItem('registrationData');
 
           resolve({
             success: true,

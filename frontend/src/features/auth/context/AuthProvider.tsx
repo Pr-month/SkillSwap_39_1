@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           avatar: data.avatar,
           birthdayDate: data.birthdate,
           city: data.city,
-          description: data.description,
+          description: data.about ?? data.description,
         },
       };
     }

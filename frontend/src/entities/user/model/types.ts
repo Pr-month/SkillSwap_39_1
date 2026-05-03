@@ -30,7 +30,7 @@ export type ExperienceOption = {
 };
 
 export type GenderOption = {
-  value: 'any' | 'male' | 'female';
+  value: 'any' | 'male' | 'female' | 'unknown';
   label: string;
 };
 

@@ -1,23 +1,27 @@
+import { RegisterDto, RegistrationGender } from '@/entities/auth/model/types';
 import { SkillCategory, SkillSubcategory } from '@/entities/skill/model/types';
 import { russianCities } from '@/shared/lib/cities';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+
 type City = (typeof russianCities)[number];
 
-export type TFullRegistrationData = TStepOneData & TStepTwoData & TStepThreeData;
+export type TFullRegistrationData = TStepOneData &
+  TStepTwoData &
+  Partial<TStepThreeData>;
 
 export type TStepOneData = {
-  email: string | undefined;
-  password: string | undefined;
+  email: RegisterDto['email'] | undefined;
+  password: RegisterDto['password'] | undefined;
 };
 
 export type TStepTwoData = {
-  avatar: string | undefined;
-  name: string | undefined;
-  birthdate: string | undefined;
-  gender: 'Мужской' | 'Женский' | undefined;
+  avatar: RegisterDto['avatar'] | undefined;
+  name: RegisterDto['name'] | undefined;
+  birthdate: RegisterDto['birthdate'] | undefined;
+  gender: RegistrationGender | undefined;
   city: City | undefined;
-  categories: SkillCategory[] | undefined;
-  subcategories: SkillSubcategory<SkillCategory>[] | undefined;
+  about: RegisterDto['about'] | undefined;
+  categoryId: RegisterDto['categoryId'] | undefined;
 };
 
 export type TStepThreeData = {
@@ -49,8 +53,8 @@ const initialState: RegistrationState = {
     birthdate: undefined,
     gender: undefined,
     city: undefined,
-    categories: undefined,
-    subcategories: undefined,
+    about: undefined,
+    categoryId: undefined,
     avatar: undefined,
   },
   stepThreeData: {

@@ -20,8 +20,8 @@ const initialState = {
     birthdate: undefined,
     gender: undefined,
     city: undefined,
-    categories: undefined,
-    subcategories: undefined,
+    about: undefined,
+    categoryId: undefined,
     avatar: undefined,
   },
   stepThreeData: {
@@ -51,10 +51,15 @@ describe('тест слайса registrationSlice', () => {
   });
 
   it('проверка обновления данных второго шага регистрации', () => {
-    const action = updateStepTwoData({ name: 'Иван', gender: 'Мужской' });
+    const action = updateStepTwoData({
+      name: 'Иван',
+      gender: 'male',
+      categoryId: 'category-id',
+    });
     const newState = registrationReducer(state, action);
     expect(newState.stepTwoData.name).toBe('Иван');
-    expect(newState.stepTwoData.gender).toBe('Мужской');
+    expect(newState.stepTwoData.gender).toBe('male');
+    expect(newState.stepTwoData.categoryId).toBe('category-id');
   });
 
   it('проверка обновления данных третьего шага регистрации', () => {

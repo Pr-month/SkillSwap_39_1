@@ -48,13 +48,13 @@ export const AuthFormUI = ({
           role="group"
           aria-label="Войти через социальные сети"
         >
-          <Button type="quaternary" aria-label="Продолжить с Google">
+          <Button type="quaternary" htmlType="button" aria-label="Продолжить с Google">
             <span className={styles.contentButton}>
               <div className={styles.logoGoogle} aria-hidden="true"></div>
               <span>Продолжить с Google</span>
             </span>
           </Button>
-          <Button type="quaternary" aria-label="Продолжить с Apple">
+          <Button type="quaternary" htmlType="button" aria-label="Продолжить с Apple">
             <span className={styles.contentButton}>
               <div className={styles.logoApple} aria-hidden="true"></div>
               <span>Продолжить с Apple</span>
@@ -141,7 +141,11 @@ export const AuthFormUI = ({
           </fieldset>
 
           <div className={styles.authLinks}>
-            <Button type="primary" disabled={!!(errors.email || errors.password)}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!!(errors.email || errors.password)}
+            >
               {textContent.buttonText}
             </Button>
             {!isFirstStage && (

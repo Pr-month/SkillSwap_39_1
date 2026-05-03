@@ -15,10 +15,10 @@ const mockState: RootState = {
     stepTwoData: {
       name: '',
       birthdate: '',
-      gender: 'Мужской',
+      gender: 'male',
       city: 'Москва',
-      categories: [],
-      subcategories: [],
+      about: '',
+      categoryId: '',
       avatar: '',
     },
     stepThreeData: {

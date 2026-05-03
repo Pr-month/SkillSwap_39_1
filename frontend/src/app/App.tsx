@@ -25,7 +25,6 @@ const ProfileDetailsPage = lazy(
 const SkillPage = lazy(() => import('@/pages/skillPage/skillPage'));
 const RegistrationForms = lazy(() => import('@/features/registrationForms/registrationForms'));
 const SuccessModal = lazy(() => import('@/features/successModal/successModal'));
-const RegisterPreviewPage = lazy(() => import('@/pages/registerPreviewPage/registerPreviewPage'));
 const ErrorPage = lazy(() => import('@/pages/ErrorPage/ErrorPage'));
 
 function App() {
@@ -109,14 +108,6 @@ function App() {
                   throw new Error('Function not implemented.');
                 }}
               />
-            }
-          />
-          <Route
-            path="/register/preview"
-            element={
-              <ProtectedRoute onlyUnAuth>
-                <RegisterPreviewPage />
-              </ProtectedRoute>
             }
           />
           <Route
