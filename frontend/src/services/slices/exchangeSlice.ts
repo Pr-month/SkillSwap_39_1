@@ -1,141 +1,130 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createExchangeRequestApi,
+  extractApiErrorMessage,
+  getIncomingRequestsApi,
+  getOutgoingRequestsApi,
+  markAllRequestsAsReadApi,
+  markRequestAsReadApi,
+} from '@/api/skillSwapApi';
+import { ExchangeRequest } from '@/entities/user/model/types';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-const LS_EXCHANGE_KEY = 'exchange_requests';
-
-interface ExchangeRequest {
-  id: string | number;
-  fromUserId: string | number;
-  fromUserName: string;
-  toUserId: string | number;
-  toUserName?: string;
-  isRead: boolean;
-  status?: 'pending' | 'accepted' | 'rejected';
-  type?: 'incoming' | 'outgoing';
-  createdAt: string;
-}
-
-interface ExchangeState {
+type ExchangeState = {
   requests: ExchangeRequest[];
   loading: boolean;
   error: string | null;
-}
-
-// Моки для инициализации
-const INITIAL_MOCKS: ExchangeRequest[] = [
-  {
-    id: 1,
-    fromUserName: 'Алексей',
-    fromUserId: 'user_001',
-    toUserId: 'user_002',
-    status: 'pending',
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    fromUserName: 'Мария',
-    fromUserId: 'user_055',
-    toUserId: 'user_002',
-    status: 'pending',
-    isRead: false,
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: 3,
-    fromUserName: 'Иван',
-    fromUserId: 'user_003',
-    toUserId: 'user_002',
-    status: 'accepted',
-    isRead: false,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
-// Инициализация хранилища
-const initializeExchangeData = () => {
-  /* Для очистки хранилища - раскомментировать обновить и закомментировать */
-  // localStorage.removeItem(LS_EXCHANGE_KEY);
-  if (!localStorage.getItem(LS_EXCHANGE_KEY)) {
-    localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(INITIAL_MOCKS));
-  }
 };
-initializeExchangeData();
 
-// Thunk для загрузки данных
-export const fetchExchanges = createAsyncThunk('exchange/fetch', async (_, { rejectWithValue }) => {
-  try {
-    const savedData = localStorage.getItem(LS_EXCHANGE_KEY);
-    return savedData ? JSON.parse(savedData) : INITIAL_MOCKS;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return rejectWithValue('Ошибка загрузки данных обменов');
-  }
-});
+type CreateExchangeRequestPayload = {
+  offeredSkillId: string;
+  requestedSkillId: string;
+};
+
+const sortRequestsByDate = (requests: ExchangeRequest[]) =>
+  [...requests].sort(
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+  );
+
+const mergeRequests = (
+  incomingRequests: ExchangeRequest[],
+  outgoingRequests: ExchangeRequest[],
+) => {
+  const uniqueRequests = new Map<string, ExchangeRequest>();
+
+  [...incomingRequests, ...outgoingRequests].forEach((request) => {
+    uniqueRequests.set(request.id, request);
+  });
+
+  return sortRequestsByDate([...uniqueRequests.values()]);
+};
 
 const initialState: ExchangeState = {
-  requests: INITIAL_MOCKS,
+  requests: [],
   loading: false,
   error: null,
 };
 
+export const fetchExchanges = createAsyncThunk<
+  ExchangeRequest[],
+  void,
+  { rejectValue: string }
+>('exchange/fetch', async (_, { rejectWithValue }) => {
+  try {
+    const [incomingRequests, outgoingRequests] = await Promise.all([
+      getIncomingRequestsApi(),
+      getOutgoingRequestsApi(),
+    ]);
+
+    return mergeRequests(incomingRequests, outgoingRequests);
+  } catch (error) {
+    const message = extractApiErrorMessage(
+      error,
+      'Не удалось загрузить данные обменов',
+    );
+
+    if (message === 'Токен доступа отсутствует') {
+      return [];
+    }
+
+    return rejectWithValue(message);
+  }
+});
+
+export const createExchangeRequest = createAsyncThunk<
+  void,
+  CreateExchangeRequestPayload,
+  { rejectValue: string }
+>('exchange/create', async (payload, { dispatch, rejectWithValue }) => {
+  try {
+    await createExchangeRequestApi(payload);
+    await dispatch(fetchExchanges()).unwrap();
+  } catch (error) {
+    return rejectWithValue(
+      extractApiErrorMessage(error, 'Не удалось отправить заявку на обмен'),
+    );
+  }
+});
+
+export const markRequestAsRead = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>('exchange/markRequestAsRead', async (requestId, { rejectWithValue }) => {
+  try {
+    await markRequestAsReadApi(requestId);
+    return requestId;
+  } catch (error) {
+    return rejectWithValue(
+      extractApiErrorMessage(error, 'Не удалось отметить заявку как прочитанную'),
+    );
+  }
+});
+
+export const markAllAsRead = createAsyncThunk<
+  void,
+  void,
+  { rejectValue: string }
+>('exchange/markAllAsRead', async (_, { rejectWithValue }) => {
+  try {
+    await markAllRequestsAsReadApi();
+  } catch (error) {
+    return rejectWithValue(
+      extractApiErrorMessage(
+        error,
+        'Не удалось отметить все заявки как прочитанные',
+      ),
+    );
+  }
+});
+
 const exchangeSlice = createSlice({
   name: 'exchange',
   initialState,
-  reducers: {
-    addRequest: {
-      reducer(state, action: PayloadAction<ExchangeRequest>) {
-        state.requests.unshift(action.payload);
-        localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(state.requests));
-      },
-      prepare(payload: Omit<ExchangeRequest, 'id' | 'isRead' | 'createdAt'>) {
-        return {
-          payload: {
-            ...payload,
-            id: `req_${Date.now()}`,
-            isRead: false,
-            createdAt: new Date().toISOString(),
-          },
-        };
-      },
-    },
-    removeRequest: (state, action: PayloadAction<string | number>) => {
-      state.requests = state.requests.filter(req => req.id !== action.payload);
-      localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(state.requests));
-    },
-    clearAllRequests: state => {
-      state.requests = [];
-      localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(state.requests));
-    },
-    markAsRead: (state, action: PayloadAction<string | number>) => {
-      const request = state.requests.find(req => req.id === action.payload);
-      if (request) {
-        request.isRead = true;
-        localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(state.requests));
-      }
-    },
-    markAllAsRead: state => {
-      state.requests.forEach(request => {
-        request.isRead = true;
-      });
-      localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(state.requests));
-    },
-    updateRequestStatus: (
-      state,
-      action: PayloadAction<{
-        id: string | number;
-        status: 'pending' | 'accepted' | 'rejected';
-      }>,
-    ) => {
-      const request = state.requests.find(req => req.id === action.payload.id);
-      if (request) {
-        request.status = action.payload.status;
-        localStorage.setItem(LS_EXCHANGE_KEY, JSON.stringify(state.requests));
-      }
-    },
-  },
-  extraReducers: builder => {
+  reducers: {},
+  extraReducers: (builder) => {
     builder
-      .addCase(fetchExchanges.pending, state => {
+      .addCase(fetchExchanges.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -146,18 +135,31 @@ const exchangeSlice = createSlice({
       .addCase(fetchExchanges.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(createExchangeRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createExchangeRequest.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createExchangeRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(markRequestAsRead.fulfilled, (state, action) => {
+        const request = state.requests.find(({ id }) => id === action.payload);
+
+        if (request) {
+          request.isRead = true;
+        }
+      })
+      .addCase(markAllAsRead.fulfilled, (state) => {
+        state.requests.forEach((request) => {
+          request.isRead = true;
+        });
       });
   },
 });
-
-// Экспорт всех экшенов
-export const {
-  addRequest,
-  removeRequest,
-  clearAllRequests,
-  markAsRead,
-  markAllAsRead,
-  updateRequestStatus,
-} = exchangeSlice.actions;
 
 export const exchangeReducer = exchangeSlice.reducer;

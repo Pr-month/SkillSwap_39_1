@@ -77,8 +77,18 @@ const SkillCard: React.FC<SkillCardProps> = ({
 
   const handleClick = async () => {
     if (alreadyRequested) return;
-    await sendExchangeRequest(ownerId);
-    onExchangeClick?.();
+
+    try {
+      await sendExchangeRequest({
+        toUserId: ownerId,
+        requestedSkillId: skill.customSkillId,
+      });
+      onExchangeClick?.();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Не удалось предложить обмен';
+      window.alert(message);
+    }
   };
 
   const dropdownItems = useMemo(

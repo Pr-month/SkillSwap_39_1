@@ -28,7 +28,6 @@ import {
 @UseGuards(JwtAuthGuard)
 @ApiRequestsController()
 @Controller('requests')
-@UseGuards(JwtAuthGuard)
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
@@ -58,6 +57,16 @@ export class RequestsController {
     return this.requestsService.create(req.user.sub, dto);
   }
 
+  @Patch('read-all')
+  markAllAsRead(@Req() req: AuthRequest) {
+    return this.requestsService.markAllAsRead(req.user.sub);
+  }
+
+  @Patch(':id/read')
+  markAsRead(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.requestsService.markAsRead(id, req.user.sub);
+  }
+
   @ApiRequestsUpdate()
   @Patch(':id')
   update(
@@ -72,13 +81,5 @@ export class RequestsController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: AuthRequest) {
     return this.requestsService.remove(id, req.user.sub);
-  }
-
-  @Post()
-  async createRequest(
-    @Req() req: AuthRequest,
-    @Body() createRequestDto: CreateRequestDto,
-  ) {
-    return this.requestsService.create(req.user.sub, createRequestDto);
   }
 }

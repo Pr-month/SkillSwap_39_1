@@ -126,8 +126,8 @@ describe('NotificationMenu', () => {
 
   it('должен иметь кнопку "Перейти" с правильным маршрутом', () => {
     renderWithProviders(<NotificationMenu isOpen={true} />);
-    const incomingLink = screen.getAllByTestId('link-to-obmen')[0];
-    expect(incomingLink).toHaveAttribute('href', '/obmen');
+    const incomingLink = screen.getAllByTestId('link-to-requests')[0];
+    expect(incomingLink).toHaveAttribute('href', '/profile/requests');
   });
 
   it('должен отображать кнопку "Прочитать все" и "Очистить"', () => {

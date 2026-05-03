@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -108,18 +109,19 @@ export class SkillsService {
     return skill;
   }
 
-  async create(dto: CreateSkillDto) {
+  async create(dto: CreateSkillDto, userId?: string) {
     const skill = this.skillRepository.create({
       title: dto.title,
       description: dto.description,
       images: dto.images,
       category: { id: dto.categoryId },
+      ...(userId ? { owner: { id: userId } } : {}),
     });
 
     return await this.skillRepository.save(skill);
   }
 
-  async update(id: string, dto: UpdateSkillDto) {
+  async update(id: string, dto: UpdateSkillDto, userId?: string) {
     const hasUpdates =
       dto.title !== undefined ||
       dto.description !== undefined ||
@@ -132,11 +134,15 @@ export class SkillsService {
 
     const skill = await this.skillRepository.findOne({
       where: { id },
-      relations: ['category'],
+      relations: ['category', 'owner'],
     });
 
     if (!skill) {
       throw new NotFoundException('Skill not found');
+    }
+
+    if (userId && skill.owner?.id !== userId) {
+      throw new ForbiddenException('Недостаточно прав для изменения навыка');
     }
 
     if (dto.title !== undefined) {
@@ -159,11 +165,26 @@ export class SkillsService {
 
     return this.skillRepository.findOne({
       where: { id },
-      relations: ['category'],
+      relations: ['category', 'owner'],
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
+    if (userId) {
+      const skill = await this.skillRepository.findOne({
+        where: { id },
+        relations: ['owner'],
+      });
+
+      if (!skill) {
+        throw new NotFoundException('Skill not found');
+      }
+
+      if (skill.owner?.id !== userId) {
+        throw new ForbiddenException('Недостаточно прав для удаления навыка');
+      }
+    }
+
     const result = await this.skillRepository.delete(id);
 
     if (!result.affected) {

@@ -1,7 +1,6 @@
-import { useState, useRef, ChangeEvent } from 'react';
+import { useEffect, useRef, useState, ChangeEvent } from 'react';
 import { PasswordChangeForm } from '../../components/PasswordChangeForm/PasswordChangeForm';
 import { useDispatch, useSelector } from '@/services/store/store';
-import { updateStepTwoData } from '@/services/slices/registrationSlice';
 import { userSliceSelectors, userSliceActions } from '@/services/slices/authSlice';
 import { Button } from '@/shared/ui/button/button';
 import { russianCities } from '@/shared/lib/cities';
@@ -80,22 +79,23 @@ const passwordSchema = yup
   .min(8, 'Пароль должен содержать минимум 8 символов')
   .matches(STRONG_PASSWORD_REGEX, STRONG_PASSWORD_HINT);
 
+const getInitialFormData = (
+  user: ReturnType<typeof userSliceSelectors.selectUser>,
+) => ({
+  email: user?.email || '',
+  name: user?.name || '',
+  birthDate: formatDateForInput(user?.birthdayDate) || '',
+  gender: normalizeStoredGender(user?.gender),
+  city: user?.city || 'Москва',
+  about: user?.description || '',
+});
+
 export function ProfileForm() {
   const navigate = useNavigate();
   const dateInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
   const user = useSelector(userSliceSelectors.selectUser);
-  const registrationData = JSON.parse(localStorage.getItem('registrationData') || '{}');
-
-  const [formData, setFormData] = useState({
-    email: registrationData?.email || user?.email || '',
-    name: registrationData?.name || user?.name || '',
-    birthDate: formatDateForInput(registrationData?.birthdate || user?.birthdayDate) || '',
-    gender: normalizeStoredGender(registrationData?.gender || user?.gender),
-    city: registrationData?.city || user?.city || 'Москва',
-    about: registrationData?.about || registrationData?.description || user?.description || '',
-    avatar: registrationData?.avatar || user?.image || '',
-  });
+  const [formData, setFormData] = useState(() => getInitialFormData(user));
 
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -112,6 +112,10 @@ export function ProfileForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setFormData(getInitialFormData(user));
+  }, [user]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -183,65 +187,19 @@ export function ProfileForm() {
       setErrors({});
       setIsLoading(true);
 
-      const updatedUser = {
-        id: user?._id || registrationData?.userId,
-        name: formData.name,
-        email: formData.email,
-        birthdayDate: new Date(formData.birthDate).toISOString(),
-        gender: formData.gender,
-        city: formData.city,
-        description: formData.about,
-        image: formData.avatar,
-      };
-
-      // Обновляем данные в localStorage
-      const updatedRegistrationData = {
-        ...registrationData,
+      const updatedUser = await updateProfileApi({
         name: formData.name,
         birthdate: new Date(formData.birthDate).toISOString(),
         gender: formData.gender,
         city: formData.city,
         about: formData.about,
-        avatar: formData.avatar,
-      };
-      localStorage.setItem('registrationData', JSON.stringify(updatedRegistrationData));
-
-      dispatch(
-        updateStepTwoData({
-          name: formData.name,
-          birthdate: new Date(formData.birthDate).toISOString(),
-          gender: formData.gender,
-          city: formData.city,
-          about: formData.about,
-          avatar: formData.avatar,
-        }),
-      );
-
-      if (user) {
-        dispatch(
-          userSliceActions.setUserData({
-            ...user,
-            ...updatedUser,
-          }),
-        );
-      }
-      const response = await updateProfileApi({
-        name: formData.name,
-        birthdate: new Date(formData.birthDate).toISOString(),
-        gender: formData.gender,
-        city: formData.city,
-        description: formData.about,
       });
 
-      if (!response.success) {
-        throw new Error('Ошибка при обновлении профиля');
-      }
+      dispatch(userSliceActions.setUserData(updatedUser));
+      setFormData(getInitialFormData(updatedUser));
 
-      setIsLoading(false);
       navigate('/profile/details');
     } catch (err) {
-      setIsLoading(false);
-
       if (err instanceof yup.ValidationError) {
         const newErrors = err.inner.reduce(
           (acc, curr) => {
@@ -257,18 +215,17 @@ export function ProfileForm() {
         setErrors(prev => ({ ...prev, form: 'Ошибка при сохранении данных' }));
         console.error('Profile update error:', err);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const isDirty =
-    formData.name !== (registrationData?.name || user?.name) ||
-    formatDateForInput(formData.birthDate) !==
-      formatDateForInput(registrationData?.birthdate || user?.birthdayDate) ||
-    formData.gender !== normalizeStoredGender(registrationData?.gender || user?.gender) ||
-    formData.city !== (registrationData?.city || user?.city) ||
-    formData.about !==
-      (registrationData?.about || registrationData?.description || user?.description) ||
-    formData.avatar !== (registrationData?.avatar || user?.image);
+    formData.name !== (user?.name || '') ||
+    formData.birthDate !== formatDateForInput(user?.birthdayDate) ||
+    formData.gender !== normalizeStoredGender(user?.gender) ||
+    formData.city !== (user?.city || 'Москва') ||
+    formData.about !== (user?.description || '');
 
   return (
     <div className={styles.profileForm}>

@@ -164,7 +164,7 @@ export class RequestsService {
         name: sender.name,
       },
     };
-    await this.notificationsGateway.notifyUser(
+    this.notificationsGateway.notifyUser(
       requestedSkill.owner.id,
       notificationPayload,
     );
@@ -175,6 +175,11 @@ export class RequestsService {
   async update(id: string, userId: string, dto: UpdateRequestDto) {
     const request = await this.requestsRepository.findOne({
       where: { id },
+      relations: {
+        sender: true,
+        receiver: true,
+        requestedSkill: true,
+      },
     });
 
     if (!request) {
@@ -186,21 +191,56 @@ export class RequestsService {
     }
 
     request.status = dto.status;
+    request.isRead = true;
 
     const notificationPayload: NotificationPayloadDto = {
-      type: 'request_accepted',
-      skillTitle: request.requestedSkill.title,
+      type:
+        dto.status === RequestStatus.REJECTED
+          ? 'request_rejected'
+          : 'request_accepted',
+      skillTitle: request.requestedSkill?.title ?? '',
       fromUser: {
         id: request.receiver.id,
         name: request.receiver.name,
       },
     };
-    await this.notificationsGateway.notifyUser(
-      request.senderId,
-      notificationPayload,
-    );
+    this.notificationsGateway.notifyUser(request.senderId, notificationPayload);
 
     return await this.requestsRepository.save(request);
+  }
+
+  async markAsRead(id: string, userId: string) {
+    const request = await this.requestsRepository.findOne({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Заявка не найдена');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new ForbiddenException('Можно отметить только входящую заявку');
+    }
+
+    request.isRead = true;
+
+    return await this.requestsRepository.save(request);
+  }
+
+  async markAllAsRead(userId: string) {
+    await this.requestsRepository.update(
+      {
+        receiverId: userId,
+        isRead: false,
+      },
+      {
+        isRead: true,
+      },
+    );
+
+    return {
+      message: 'Все входящие заявки отмечены как прочитанные',
+    };
   }
 
   async remove(id: string, userId: string) {

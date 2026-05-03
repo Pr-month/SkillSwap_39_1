@@ -1,17 +1,24 @@
-import { useRef, ChangeEvent, useState } from 'react';
+import { useRef, ChangeEvent, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from '@/services/store/store';
 import { userSliceSelectors, userSliceActions } from '@/services/slices/authSlice';
+import { updateProfileApi, uploadFileApi } from '@/api/skillSwapApi';
 import styles from './ProfileAvatar.module.css';
 
 export function ProfileAvatar() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
   const user = useSelector(userSliceSelectors.selectUser);
-  const registrationData = JSON.parse(localStorage.getItem('registrationData') || '{}');
-  const [avatarPreview, setAvatarPreview] = useState(registrationData?.avatar || user?.image || '');
+  const [avatarPreview, setAvatarPreview] = useState(
+    typeof user?.image === 'string' ? user.image : '',
+  );
   const [error, setError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    setAvatarPreview(typeof user?.image === 'string' ? user.image : '');
+  }, [user?.image]);
+
+  const handleAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -25,32 +32,26 @@ export function ProfileAvatar() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = event => {
-      if (event.target?.result) {
-        const avatarUrl = event.target.result as string;
-        setAvatarPreview(avatarUrl);
-        setError('');
+    try {
+      setIsUploading(true);
+      const uploadedFile = await uploadFileApi(file);
+      const updatedUser = await updateProfileApi({
+        avatar: uploadedFile.url,
+      });
 
-        // Обновляем в localStorage
-        const updatedRegistrationData = {
-          ...registrationData,
-          avatar: avatarUrl,
-        };
-        localStorage.setItem('registrationData', JSON.stringify(updatedRegistrationData));
-
-        // Обновляем в Redux
-        if (user) {
-          dispatch(
-            userSliceActions.setUserData({
-              ...user,
-              image: avatarUrl,
-            }),
-          );
-        }
-      }
-    };
-    reader.readAsDataURL(file);
+      setAvatarPreview(updatedUser.image as string);
+      setError('');
+      dispatch(userSliceActions.setUserData(updatedUser));
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : 'Не удалось обновить аватар',
+      );
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -75,6 +76,7 @@ export function ProfileAvatar() {
         className={styles.profileEditPhotoBtn}
         onClick={() => fileInputRef.current?.click()}
         type="button"
+        disabled={isUploading}
       >
         <span className={styles.profileGalleryEdit} />
       </button>

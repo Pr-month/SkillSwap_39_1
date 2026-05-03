@@ -43,21 +43,28 @@ export class SkillsController {
   }
 
   @ApiSkillsCreate()
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateSkillDto) {
-    return this.skillsService.create(dto);
+  create(@Body() dto: CreateSkillDto, @Req() req?: AuthRequest) {
+    return this.skillsService.create(dto, req?.user?.sub);
   }
 
   @ApiSkillsUpdate()
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateSkillDto) {
-    return this.skillsService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateSkillDto,
+    @Req() req?: AuthRequest,
+  ) {
+    return this.skillsService.update(id, dto, req?.user?.sub);
   }
 
   @ApiSkillsRemove()
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.skillsService.remove(id);
+  remove(@Param('id') id: string, @Req() req?: AuthRequest) {
+    return this.skillsService.remove(id, req?.user?.sub);
   }
 
   @ApiSkillsRemoveFromFavorites()

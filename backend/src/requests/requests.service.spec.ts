@@ -645,6 +645,11 @@ describe('RequestsService', () => {
       expect(requestsRepository.findOne).toHaveBeenCalledTimes(1);
       expect(requestsRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockRequests[0].id },
+        relations: {
+          sender: true,
+          receiver: true,
+          requestedSkill: true,
+        },
       });
       expect(result).toEqual(updateMockRequest);
     });

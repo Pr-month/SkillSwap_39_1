@@ -4,8 +4,7 @@ import {
 } from '@/entities/auth/model/types';
 import { Category } from '@/entities/category/model/types';
 import { CustomSkill, Skill } from '@/entities/skill/model/types';
-import { User } from '@/entities/user/model/types';
-import { TServerResponse } from '@/shared/utils/api';
+import { ExchangeRequest, User } from '@/entities/user/model/types';
 import { getCookie } from '@/shared/utils/cookies';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
@@ -51,6 +50,31 @@ type BackendUser = {
   wantToLearn?: BackendCategory[];
 };
 
+type BackendRequestUser = {
+  id: string;
+  name: string;
+};
+
+type BackendRequestSkill = {
+  id: string;
+  title: string;
+};
+
+type BackendExchangeRequest = {
+  id: string;
+  createdAt: string;
+  senderId: string;
+  receiverId: string;
+  status: ExchangeRequest['status'];
+  isRead: boolean;
+  offeredSkillId?: string | null;
+  requestedSkillId?: string | null;
+  sender?: BackendRequestUser;
+  receiver?: BackendRequestUser;
+  offeredSkill?: BackendRequestSkill | null;
+  requestedSkill?: BackendRequestSkill | null;
+};
+
 type UsersResponseMeta = {
   page: number;
   limit: number;
@@ -66,6 +90,23 @@ type UsersResponse = {
   data: BackendUser[];
   meta: UsersResponseMeta;
 };
+
+type RequestsResponse = {
+  data: BackendExchangeRequest[];
+};
+
+type CreateExchangeRequestPayload = {
+  offeredSkillId: string;
+  requestedSkillId: string;
+};
+
+type SkillMutationPayload = {
+  title: string;
+  description?: string;
+  images?: string[];
+  categoryId: string;
+};
+
 type UploadFileResponse = {
   message: string;
   id: string;
@@ -118,6 +159,25 @@ export const extractApiErrorMessage = (
   }
 
   return fallbackMessage;
+};
+
+const isNotFoundApiError = (error: unknown) => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const apiError = error as ApiErrorResponse;
+  return apiError.statusCode === 404;
+};
+
+const getAccessToken = () => {
+  const accessToken = getCookie('accessToken');
+
+  if (!accessToken) {
+    throw new Error('Токен доступа отсутствует');
+  }
+
+  return accessToken;
 };
 
 const mapCategoryToSkillCategory = (category?: BackendCategory | null) => {
@@ -187,6 +247,23 @@ const adaptBackendUserToUser = (backendUser: BackendUser): User => ({
   email: backendUser.email,
 });
 
+const adaptBackendRequestToExchangeRequest = (
+  request: BackendExchangeRequest,
+): ExchangeRequest => ({
+  id: request.id,
+  fromUserId: request.senderId,
+  fromUserName: request.sender?.name || 'Пользователь',
+  toUserId: request.receiverId,
+  toUserName: request.receiver?.name,
+  offeredSkillId: request.offeredSkillId ?? null,
+  offeredSkillName: request.offeredSkill?.title,
+  requestedSkillId: request.requestedSkillId ?? null,
+  requestedSkillName: request.requestedSkill?.title,
+  status: request.status,
+  isRead: request.isRead,
+  createdAt: request.createdAt,
+});
+
 const resolvePublicFileUrl = (url: string) => {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
@@ -200,6 +277,37 @@ export const getSkillsApi = async () => {
   const res = await fetch(`/api/skills`);
   const checkedRes = await checkResponse<SkillResponse>(res);
   return assertSuccess(checkedRes, 'Не удалось получить навыки');
+};
+
+export const createSkillApi = async (
+  data: SkillMutationPayload,
+): Promise<void> => {
+  const res = await fetch('/api/skills', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+      Authorization: `Bearer ${getAccessToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await checkResponse<BackendUserSkill>(res);
+};
+
+export const updateSkillApi = async (
+  skillId: string,
+  data: Partial<SkillMutationPayload>,
+): Promise<void> => {
+  const res = await fetch(`/api/skills/${skillId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+      Authorization: `Bearer ${getAccessToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await checkResponse<BackendUserSkill>(res);
 };
 
 export const getCategoriesApi = async (): Promise<Category[]> => {
@@ -260,16 +368,72 @@ export const loginUserApi = async (data: LoginData): Promise<AuthTokens> => {
   return checkResponse<AuthTokens>(res);
 };
 
-export const getCurrentUserApi = async (): Promise<User> => {
-  const accessToken = getCookie('accessToken');
+const getRequestsApi = async (
+  endpoint: '/api/requests/incoming' | '/api/requests/outgoing',
+): Promise<ExchangeRequest[]> => {
+  try {
+    const res = await fetch(endpoint, {
+      headers: {
+        Authorization: `Bearer ${getAccessToken()}`,
+      },
+    });
+    const payload = await checkResponse<RequestsResponse>(res);
 
-  if (!accessToken) {
-    throw new Error('Токен доступа отсутствует');
+    return payload.data.map(adaptBackendRequestToExchangeRequest);
+  } catch (error) {
+    if (isNotFoundApiError(error)) {
+      return [];
+    }
+
+    throw error;
   }
+};
 
+export const getIncomingRequestsApi = () => getRequestsApi('/api/requests/incoming');
+
+export const getOutgoingRequestsApi = () => getRequestsApi('/api/requests/outgoing');
+
+export const createExchangeRequestApi = async (
+  data: CreateExchangeRequestPayload,
+): Promise<void> => {
+  const res = await fetch('/api/requests', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+      Authorization: `Bearer ${getAccessToken()}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  await checkResponse<BackendExchangeRequest>(res);
+};
+
+export const markRequestAsReadApi = async (id: string): Promise<void> => {
+  const res = await fetch(`/api/requests/${id}/read`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${getAccessToken()}`,
+    },
+  });
+
+  await checkResponse<BackendExchangeRequest>(res);
+};
+
+export const markAllRequestsAsReadApi = async (): Promise<void> => {
+  const res = await fetch('/api/requests/read-all', {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${getAccessToken()}`,
+    },
+  });
+
+  await checkResponse<{ message: string }>(res);
+};
+
+export const getCurrentUserApi = async (): Promise<User> => {
   const res = await fetch('/api/users/me', {
     headers: {
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: `Bearer ${getAccessToken()}`,
     },
   });
 
@@ -313,28 +477,27 @@ export const uploadFileApi = async (file: File): Promise<UploadFileResponse> => 
 
 // Добавляем тип для обновления профиля
 export type TUpdateProfileData = {
-  name: string;
-  birthdate: string;
-  gender: RegistrationGender;
-  city: string;
-  description: string;
+  name?: string;
+  birthdate?: string;
+  gender?: RegistrationGender;
+  city?: string;
+  about?: string;
   avatar?: string;
+  categoryId?: string;
 };
 
-export type TUpdateProfileResponse = TServerResponse<{
-  user: User;
-}>;
-
-// Добавляем метод для обновления профиля
-export const updateProfileApi = (data: TUpdateProfileData): Promise<TUpdateProfileResponse> => {
-  return fetch(`${URL}/api/users/me`, {
+export const updateProfileApi = async (data: TUpdateProfileData): Promise<User> => {
+  const res = await fetch(`${URL}/api/users/me`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
       Authorization: `Bearer ${getCookie('accessToken') || ''}`,
     },
     body: JSON.stringify(data),
-  }).then(res => checkResponse<TUpdateProfileResponse>(res));
+  });
+
+  const backendUser = await checkResponse<BackendUser>(res);
+  return adaptBackendUserToUser(backendUser);
 };
 
 export type ServerResponse<T> = {

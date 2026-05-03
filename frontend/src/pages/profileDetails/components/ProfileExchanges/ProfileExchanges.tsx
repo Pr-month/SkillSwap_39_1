@@ -5,14 +5,11 @@ import { UserCard } from '@/widgets/userCard/userCard';
 import { Button } from '@/shared/ui/button/button';
 import { useNavigate } from 'react-router-dom';
 import styles from './ProfileExchanges.module.css';
-import { useAuth } from '@/features/auth/context/AuthContext';
 
 export function ProfileExchanges() {
-  const { user } = useAuth();
   const allRequests = useSelector(selectFromUserExchangeRequest);
   const catalogUsers = useSelector(selectCatalogItems);
-  const requests = allRequests.filter(request => request.fromUserId === user?.id);
-  const exchangeUsers = requests
+  const exchangeUsers = allRequests
     .map(request => catalogUsers.find(catalogUser => catalogUser._id === request.toUserId))
     .filter(Boolean);
   const navigate = useNavigate();

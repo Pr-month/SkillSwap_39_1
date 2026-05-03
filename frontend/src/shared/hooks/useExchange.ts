@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { addRequest } from '@/services/slices/exchangeSlice';
+import { createExchangeRequest } from '@/services/slices/exchangeSlice';
 import { useDispatch, useSelector } from '@/services/store/store';
 
 export const useExchange = () => {
@@ -13,30 +13,47 @@ export const useExchange = () => {
     (toUserId: string) => {
       if (!currentUser) return false;
       return exchangeRequests.some(
-        req => req.fromUserId === currentUser._id && req.toUserId === toUserId,
+        req =>
+          req.fromUserId === currentUser._id &&
+          req.toUserId === toUserId &&
+          req.status !== 'rejected' &&
+          req.status !== 'done',
       );
     },
     [currentUser, exchangeRequests],
   );
 
   const sendExchangeRequest = useCallback(
-    (toUserId: string) => {
+    async ({
+      toUserId,
+      requestedSkillId,
+    }: {
+      toUserId: string;
+      requestedSkillId: string;
+    }) => {
       if (!currentUser) {
         throw new Error('Cannot send request: user not authenticated');
       }
 
-      const newRequest = {
+      const offeredSkillId = currentUser.canTeach?.customSkillId;
+
+      if (!offeredSkillId) {
+        throw new Error('Сначала добавьте свой навык, чтобы предложить обмен');
+      }
+
+      await dispatch(
+        createExchangeRequest({
+          offeredSkillId,
+          requestedSkillId,
+        }),
+      ).unwrap();
+
+      return {
         fromUserId: currentUser._id,
-        fromUserName: currentUser.name,
         toUserId,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        id: `req_${Date.now()}`,
+        offeredSkillId,
+        requestedSkillId,
       };
-
-      dispatch(addRequest(newRequest));
-
-      return newRequest;
     },
     [currentUser, dispatch],
   );
