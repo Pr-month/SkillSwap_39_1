@@ -1,133 +1,138 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+  createExchangeRequest,
   exchangeReducer,
-  addRequest,
-  removeRequest,
-  clearAllRequests,
-  markAsRead,
+  fetchExchanges,
   markAllAsRead,
+  markRequestAsRead,
 } from '../exchangeSlice';
 
+const mockRequests = [
+  {
+    id: 'request-1',
+    fromUserId: 'user-1',
+    fromUserName: 'Алексей',
+    toUserId: 'user-2',
+    toUserName: 'Мария',
+    offeredSkillId: 'skill-1',
+    offeredSkillName: 'React',
+    requestedSkillId: 'skill-2',
+    requestedSkillName: 'Node.js',
+    status: 'pending' as const,
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'request-2',
+    fromUserId: 'user-3',
+    fromUserName: 'Ирина',
+    toUserId: 'user-2',
+    toUserName: 'Мария',
+    offeredSkillId: 'skill-3',
+    offeredSkillName: 'Docker',
+    requestedSkillId: 'skill-4',
+    requestedSkillName: 'TypeScript',
+    status: 'inProgress' as const,
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  },
+];
+
 describe('exchangeSlice', () => {
-  it('should return the initial state', () => {
+  it('возвращает пустое initial state без моков', () => {
     const state = exchangeReducer(undefined, { type: 'unknown' });
-    expect(state.requests[0].id).toBe(1);
-    expect(state.requests[0].fromUserName).toBe('Алексей');
-    expect(state.requests[1].id).toBe(2);
-    expect(state.requests[1].fromUserName).toBe('Мария');
+
+    expect(state.requests).toEqual([]);
+    expect(state.loading).toBe(false);
+    expect(state.error).toBeNull();
   });
 
-  const getInitialState = () => exchangeReducer(undefined, { type: '@@INIT' });
+  it('обрабатывает fetchExchanges.pending', () => {
+    const state = exchangeReducer(undefined, fetchExchanges.pending('request-id'));
 
-  describe('addRequest', () => {
-    it('should generate id, createdAt and isRead = false', () => {
-      const payload = {
-        fromUserName: 'Елена',
-        fromUserId: 'user_003',
-        toUserId: 'user_001',
-      };
-
-      const action = addRequest(payload);
-      const state = exchangeReducer(getInitialState(), action);
-
-      expect(state.requests).toHaveLength(4);
-      const newRequest = state.requests[0];
-
-      expect(newRequest.fromUserName).toBe('Елена');
-      expect(newRequest.fromUserId).toBe('user_003');
-      expect(newRequest.toUserId).toBe('user_001');
-      expect(newRequest.id).toBeTypeOf('string');
-      expect(newRequest.id).toMatch(/^req_\d+$/);
-      expect(newRequest.createdAt).toBeDefined();
-      expect(newRequest.isRead).toBe(false);
-    });
-
-    it('should add request to the top of the list', () => {
-      const payload = {
-        fromUserName: 'Елена',
-        fromUserId: 'user_003',
-        toUserId: 'user_001',
-      };
-
-      const action = addRequest(payload);
-      const state = exchangeReducer(getInitialState(), action);
-
-      expect(state.requests[0].fromUserName).toBe('Елена');
-      expect(state.requests[1].fromUserName).toBe('Алексей');
-    });
+    expect(state.loading).toBe(true);
+    expect(state.error).toBeNull();
   });
 
-  describe('removeRequest', () => {
-    it('should remove request by id', () => {
-      const action = removeRequest(1);
-      const state = exchangeReducer(getInitialState(), action);
+  it('обрабатывает fetchExchanges.fulfilled', () => {
+    const state = exchangeReducer(
+      undefined,
+      fetchExchanges.fulfilled(mockRequests, 'request-id'),
+    );
 
-      expect(state.requests).toHaveLength(2);
-      expect(state.requests.find(r => r.id === 1)).toBeUndefined();
-    });
-
-    it('should not mutate state if request not found', () => {
-      const action = removeRequest(999);
-      const state = exchangeReducer(getInitialState(), action);
-
-      expect(state.requests).toHaveLength(3);
-    });
+    expect(state.loading).toBe(false);
+    expect(state.requests).toEqual(mockRequests);
   });
 
-  describe('clearAllRequests', () => {
-    it('should clear all requests', () => {
-      const action = clearAllRequests();
-      const state = exchangeReducer(getInitialState(), action);
+  it('обрабатывает fetchExchanges.rejected', () => {
+    const state = exchangeReducer(
+      undefined,
+      fetchExchanges.rejected(
+        new Error('boom'),
+        'request-id',
+        undefined,
+        'Ошибка загрузки',
+      ),
+    );
 
-      expect(state.requests).toHaveLength(0);
-      expect(state.requests).toEqual([]);
-    });
+    expect(state.loading).toBe(false);
+    expect(state.error).toBe('Ошибка загрузки');
   });
 
-  describe('markAsRead', () => {
-    it('should mark a newly added request as read by string id', () => {
-      const stateAfterAdd = exchangeReducer(
-        getInitialState(),
-        addRequest({
-          fromUserName: 'Елена',
-          fromUserId: 'user_003',
-          toUserId: 'user_001',
-        }),
-      );
+  it('обрабатывает createExchangeRequest.pending и rejected', () => {
+    const pendingState = exchangeReducer(
+      undefined,
+      createExchangeRequest.pending('request-id', {
+        offeredSkillId: 'skill-1',
+        requestedSkillId: 'skill-2',
+      }),
+    );
 
-      const newRequest = stateAfterAdd.requests[0];
-      expect(typeof newRequest.id).toBe('string');
-      expect(newRequest.isRead).toBe(false);
+    expect(pendingState.loading).toBe(true);
 
-      const stateAfterMark = exchangeReducer(stateAfterAdd, markAsRead(String(newRequest.id)));
+    const rejectedState = exchangeReducer(
+      pendingState,
+      createExchangeRequest.rejected(
+        new Error('boom'),
+        'request-id',
+        {
+          offeredSkillId: 'skill-1',
+          requestedSkillId: 'skill-2',
+        },
+        'Не удалось отправить заявку',
+      ),
+    );
 
-      const updatedRequest = stateAfterMark.requests[0];
-      expect(updatedRequest.isRead).toBe(true);
-    });
-
-    it('should not mutate state if request not found', () => {
-      const stateBefore = getInitialState();
-      const action = markAsRead('non-existent-id');
-      const stateAfter = exchangeReducer(stateBefore, action);
-
-      expect(stateAfter).toEqual(stateBefore);
-    });
+    expect(rejectedState.loading).toBe(false);
+    expect(rejectedState.error).toBe('Не удалось отправить заявку');
   });
 
-  describe('markAllAsRead', () => {
-    it('should mark all requests as read', () => {
-      const action = markAllAsRead();
-      const state = exchangeReducer(getInitialState(), action);
+  it('обрабатывает markRequestAsRead.fulfilled', () => {
+    const stateWithRequests = exchangeReducer(
+      undefined,
+      fetchExchanges.fulfilled(mockRequests, 'request-id'),
+    );
 
-      expect(state.requests.every(req => req.isRead)).toBe(true);
-    });
+    const nextState = exchangeReducer(
+      stateWithRequests,
+      markRequestAsRead.fulfilled('request-1', 'request-id', 'request-1'),
+    );
 
-    it('should not add or remove requests', () => {
-      const action = markAllAsRead();
-      const state = exchangeReducer(getInitialState(), action);
+    expect(nextState.requests[0].isRead).toBe(true);
+    expect(nextState.requests[1].isRead).toBe(false);
+  });
 
-      expect(state.requests).toHaveLength(3);
-      expect(state.requests.map(r => r.id)).toEqual([1, 2, 3]);
-    });
+  it('обрабатывает markAllAsRead.fulfilled', () => {
+    const stateWithRequests = exchangeReducer(
+      undefined,
+      fetchExchanges.fulfilled(mockRequests, 'request-id'),
+    );
+
+    const nextState = exchangeReducer(
+      stateWithRequests,
+      markAllAsRead.fulfilled(undefined, 'request-id', undefined),
+    );
+
+    expect(nextState.requests.every((request) => request.isRead)).toBe(true);
   });
 });

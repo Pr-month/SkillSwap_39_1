@@ -1,72 +1,168 @@
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useSelector, useDispatch } from '@/services/store/store';
-import { userSliceSelectors, userSliceActions } from '@/services/slices/authSlice';
-import { skillsCategories } from '@/shared/lib/categories';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  createSkillApi,
+  extractApiErrorMessage,
+  getCategoriesApi,
+  updateSkillApi,
+} from '@/api/skillSwapApi';
+import { Category } from '@/entities/category/model/types';
+import { userSliceSelectors } from '@/services/slices/authSlice';
+import { useDispatch, useSelector } from '@/services/store/store';
+import { fetchUser } from '@/services/thunk/authUser';
 import { Button } from '@/shared/ui/button/button';
 import styles from './ProfileSkills.module.css';
-import { CustomSkill } from '@/entities/skill/model/types';
 
-type SkillCategory = keyof typeof skillsCategories;
+type SkillFormData = {
+  parentCategoryId: string;
+  categoryId: string;
+  name: string;
+  description: string;
+};
+
+const getInitialFormData = (
+  user: ReturnType<typeof userSliceSelectors.selectUser>,
+  categories: Category[],
+): SkillFormData => {
+  const currentSkill = user?.canTeach?.name ? user.canTeach : null;
+
+  if (!currentSkill) {
+    return {
+      parentCategoryId: '',
+      categoryId: '',
+      name: '',
+      description: '',
+    };
+  }
+
+  const matchedParent =
+    categories.find((category) =>
+      category.children.some((child) => child.id === currentSkill.subcategoryId),
+    ) ||
+    categories.find((category) => category.name === currentSkill.category);
+
+  const matchedChild =
+    matchedParent?.children.find((child) => child.id === currentSkill.subcategoryId) ||
+    matchedParent?.children.find((child) => child.name === currentSkill.subcategory);
+
+  return {
+    parentCategoryId: matchedParent?.id || '',
+    categoryId: matchedChild?.id || currentSkill.subcategoryId || '',
+    name: currentSkill.name || '',
+    description: currentSkill.description || '',
+  };
+};
 
 export function ProfileSkills() {
   const dispatch = useDispatch();
   const user = useSelector(userSliceSelectors.selectUser);
-  const registrationData = JSON.parse(localStorage.getItem('registrationData') || '{}');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    category: registrationData?.skillCategory || user?.canTeach?.category || '',
-    subcategory: registrationData?.skillSubCategory || user?.canTeach?.subcategory || '',
-    name: registrationData?.skillName || user?.canTeach?.name || '',
-    description: registrationData?.description || user?.canTeach?.description || '',
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState<SkillFormData>({
+    parentCategoryId: '',
+    categoryId: '',
+    name: '',
+    description: '',
   });
 
-  const handleAddSkill = () => {
-    if (formData.category && formData.subcategory && formData.name && user) {
-      const updatedSkills = {
-        category: formData.category,
-        subcategory: formData.subcategory,
-        subcategoryId: `${formData.category.toLowerCase()}_${formData.subcategory.toLowerCase()}_${uuidv4()}`,
-        name: formData.name,
-        description: formData.description || '',
-        image: registrationData?.images || user.canTeach?.image || [],
-        customSkillId: user.canTeach?.customSkillId || uuidv4(),
-      } as CustomSkill;
+  const currentSkill = user?.canTeach?.name ? user.canTeach : null;
 
-      dispatch(
-        userSliceActions.setUserData({
-          ...user,
-          canTeach: updatedSkills,
-        }),
-      );
+  useEffect(() => {
+    let isMounted = true;
 
-      // Обновляем данные в localStorage
-      const updatedRegistrationData = {
-        ...registrationData,
-        skillCategory: formData.category,
-        skillSubCategory: formData.subcategory,
-        skillName: formData.name,
-        description: formData.description,
+    const loadCategories = async () => {
+      try {
+        const loadedCategories = await getCategoriesApi();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setCategories(loadedCategories);
+        setError('');
+      } catch (loadError) {
+        if (!isMounted) {
+          return;
+        }
+
+        setError(
+          extractApiErrorMessage(
+            loadError,
+            'Не удалось загрузить категории навыков',
+          ),
+        );
+      }
+    };
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setFormData(getInitialFormData(user, categories));
+  }, [user, categories]);
+
+  const selectedParent = useMemo(
+    () => categories.find((category) => category.id === formData.parentCategoryId),
+    [categories, formData.parentCategoryId],
+  );
+
+  const availableSubcategories = selectedParent?.children || [];
+
+  const handleSave = async () => {
+    if (!formData.parentCategoryId || !formData.categoryId || !formData.name.trim()) {
+      setError('Заполните категорию, подкатегорию и название навыка');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+
+      const images =
+        currentSkill && Array.isArray(currentSkill.image)
+          ? currentSkill.image.filter(
+              (image): image is string => typeof image === 'string',
+            )
+          : undefined;
+
+      const payload = {
+        title: formData.name.trim(),
+        description: formData.description.trim() || undefined,
+        categoryId: formData.categoryId,
+        images,
       };
-      localStorage.setItem('registrationData', JSON.stringify(updatedRegistrationData));
 
+      if (currentSkill?.customSkillId) {
+        await updateSkillApi(currentSkill.customSkillId, payload);
+      } else {
+        await createSkillApi(payload);
+      }
+
+      await dispatch(fetchUser()).unwrap();
       setIsEditing(false);
+    } catch (saveError) {
+      setError(
+        extractApiErrorMessage(saveError, 'Не удалось сохранить навык'),
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const availableSubcategories = formData.category
-    ? skillsCategories[formData.category as SkillCategory]
-    : [];
-
   return (
     <div className={styles.container}>
-      {user?.canTeach ? (
+      {currentSkill ? (
         <div className={styles.skillCard} style={{ backgroundColor: '#E9F7E7' }}>
-          <h3 className={styles.skillCategory}>{user.canTeach.category}</h3>
-          <p className={styles.skillSubcategory}>{user.canTeach.subcategory}</p>
-          <p className={styles.skillName}>{user.canTeach.name}</p>
-          {user.canTeach.description && (
-            <p className={styles.skillDescription}>{user.canTeach.description}</p>
+          <h3 className={styles.skillCategory}>{currentSkill.category}</h3>
+          <p className={styles.skillSubcategory}>{currentSkill.subcategory}</p>
+          <p className={styles.skillName}>{currentSkill.name}</p>
+          {currentSkill.description && (
+            <p className={styles.skillDescription}>{currentSkill.description}</p>
           )}
         </div>
       ) : (
@@ -74,7 +170,7 @@ export function ProfileSkills() {
       )}
 
       <Button type="primary" onClick={() => setIsEditing(true)}>
-        {user?.canTeach ? 'Изменить навык' : 'Добавить навык'}
+        {currentSkill ? 'Изменить навык' : 'Добавить навык'}
       </Button>
 
       {isEditing && (
@@ -83,19 +179,19 @@ export function ProfileSkills() {
             <label className={styles.label}>Категория:</label>
             <select
               className={styles.select}
-              value={formData.category}
-              onChange={e => {
-                setFormData({
-                  ...formData,
-                  category: e.target.value,
-                  subcategory: '',
-                });
-              }}
+              value={formData.parentCategoryId}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  parentCategoryId: event.target.value,
+                  categoryId: '',
+                }))
+              }
             >
               <option value="">Выберите категорию</option>
-              {Object.keys(skillsCategories).map(category => (
-                <option key={category} value={category}>
-                  {category}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>
@@ -105,19 +201,19 @@ export function ProfileSkills() {
             <label className={styles.label}>Подкатегория:</label>
             <select
               className={styles.select}
-              value={formData.subcategory}
-              onChange={e =>
-                setFormData({
-                  ...formData,
-                  subcategory: e.target.value,
-                })
+              value={formData.categoryId}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  categoryId: event.target.value,
+                }))
               }
-              disabled={!formData.category}
+              disabled={!formData.parentCategoryId}
             >
               <option value="">Выберите подкатегорию</option>
-              {availableSubcategories.map(subcategory => (
-                <option key={subcategory} value={subcategory}>
-                  {subcategory}
+              {availableSubcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>
+                  {subcategory.name}
                 </option>
               ))}
             </select>
@@ -129,11 +225,11 @@ export function ProfileSkills() {
               type="text"
               className={styles.input}
               value={formData.name}
-              onChange={e =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                })
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  name: event.target.value,
+                }))
               }
               placeholder="Название навыка"
             />
@@ -144,20 +240,22 @@ export function ProfileSkills() {
             <textarea
               className={styles.textarea}
               value={formData.description}
-              onChange={e =>
-                setFormData({
-                  ...formData,
-                  description: e.target.value,
-                })
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: event.target.value,
+                }))
               }
               placeholder="Описание навыка"
               rows={3}
             />
           </div>
 
+          {error && <p className={styles.emptyText}>{error}</p>}
+
           <div className={styles.buttonGroup}>
-            <Button type="primary" onClick={handleAddSkill}>
-              Сохранить
+            <Button type="primary" onClick={handleSave} disabled={isLoading}>
+              {isLoading ? 'Сохранение...' : 'Сохранить'}
             </Button>
             <Button type="secondary" onClick={() => setIsEditing(false)}>
               Отмена

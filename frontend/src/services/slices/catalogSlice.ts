@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { usersData } from '@/shared/mocks/usersData';
+import { getUsersApi, extractApiErrorMessage } from '@/api/skillSwapApi';
 import { User } from '@/entities/user/model/types';
 
 // Ключ для localStorage
@@ -31,12 +31,19 @@ const getCachedUsers = (): User[] | null => {
 
 // Async Thunk - единственный источник правды для данных
 export const fetchCatalog = createAsyncThunk('catalog/fetch', async (_, { rejectWithValue }) => {
+  const cachedUsers = getCachedUsers();
+
   try {
-    const cachedUsers = getCachedUsers();
-    return cachedUsers || usersData;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const users = await getUsersApi();
+    return users;
   } catch (error) {
-    return rejectWithValue('Ошибка загрузки профилей');
+    if (cachedUsers) {
+      return cachedUsers;
+    }
+
+    return rejectWithValue(
+      extractApiErrorMessage(error, 'Ошибка загрузки профилей'),
+    );
   }
 });
 

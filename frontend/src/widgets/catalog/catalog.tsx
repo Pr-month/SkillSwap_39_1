@@ -48,7 +48,10 @@ const Catalog: React.FC<{ isAuthenticated: boolean; isFiltered: boolean }> = ({
 
   // Категоризация пользователей
   const categorizedUsers = useMemo(() => {
-    const usersToCategorize = displayMode === 'default' ? allUsers : filteredUsers;
+    const sourceUsers = displayMode === 'default' ? allUsers : filteredUsers;
+    const usersToCategorize = currentUser
+      ? sourceUsers.filter(user => user._id !== currentUser._id)
+      : sourceUsers;
 
     return {
       // Для "Точное соответствие" (заглушка)

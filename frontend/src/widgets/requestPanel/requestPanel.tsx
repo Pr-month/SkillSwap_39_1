@@ -1,6 +1,7 @@
 import { selectToUserExchangeRequest } from '@/services/selectors/exchangeSelectors';
-import { markAsRead } from '@/services/slices/exchangeSlice';
+import { markRequestAsRead } from '@/services/slices/exchangeSlice';
 import { useDispatch, useSelector } from '@/services/store/store';
+import { useNavigate } from 'react-router-dom';
 import styles from './requestPanel.module.css';
 
 /* ВРЕМЕННОЕ РЕШЕНИЕ */
@@ -10,12 +11,13 @@ import styles from './requestPanel.module.css';
 const RequestPanel = () => {
   const requests = useSelector(selectToUserExchangeRequest);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Фильтруем только непрочитанные запросы
   const unreadRequests = requests.filter(request => !request.isRead);
 
-  const handleRemove = (id: string | number) => {
-    dispatch(markAsRead(id));
+  const handleRemove = (id: string) => {
+    void dispatch(markRequestAsRead(id));
   };
 
   if (requests.length === 0) {
@@ -36,9 +38,7 @@ const RequestPanel = () => {
                 <div className={styles.closeIcon}></div>
               </button>
             </div>
-            <button className={styles.goBtn}>
-              {/* Здесь будет логика перехода к обмену
-                // Например: navigate(`/exchange/${request.id}`);*/}
+            <button className={styles.goBtn} onClick={() => navigate('/profile/requests')}>
               Перейти
             </button>
           </div>

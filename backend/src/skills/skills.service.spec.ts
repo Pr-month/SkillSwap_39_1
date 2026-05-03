@@ -73,12 +73,12 @@ describe('SkillsService', () => {
 
   beforeEach(async () => {
     queryBuilder = {
-      leftJoinAndSelect: jest.fn(),
-      orderBy: jest.fn(),
-      skip: jest.fn(),
-      take: jest.fn(),
-      andWhere: jest.fn(),
-      getManyAndCount: jest.fn(),
+      leftJoinAndSelect: jest.fn<QueryBuilderMock, [string, string]>(),
+      orderBy: jest.fn<QueryBuilderMock, [string, string]>(),
+      skip: jest.fn<QueryBuilderMock, [number]>(),
+      take: jest.fn<QueryBuilderMock, [number]>(),
+      andWhere: jest.fn<QueryBuilderMock, [unknown, unknown?]>(),
+      getManyAndCount: jest.fn<Promise<[Skill[], number]>, []>(),
     };
     queryBuilder.leftJoinAndSelect.mockReturnValue(queryBuilder);
     queryBuilder.orderBy.mockReturnValue(queryBuilder);
@@ -126,6 +126,8 @@ describe('SkillsService', () => {
       page: 2,
       limit: 5,
     };
+    const page = pageQueryMock.page ?? 1;
+    const limit = pageQueryMock.limit ?? 10;
     const totalSkillsMock = 20;
 
     it('проверка успешного ответа', async () => {
@@ -142,23 +144,19 @@ describe('SkillsService', () => {
         'category',
       );
       expect(queryBuilder.orderBy).toHaveBeenCalledWith('skill.title', 'ASC');
-      expect(queryBuilder.skip).toHaveBeenCalledWith(
-        (pageQueryMock.page - 1) * pageQueryMock.limit,
-      );
-      expect(queryBuilder.take).toHaveBeenCalledWith(pageQueryMock.limit);
+      expect(queryBuilder.skip).toHaveBeenCalledWith((page - 1) * limit);
+      expect(queryBuilder.take).toHaveBeenCalledWith(limit);
       expect(result).toEqual({
         data: [...mockSkills],
         meta: {
-          page: pageQueryMock.page,
-          limit: pageQueryMock.limit,
-          skip: (pageQueryMock.page - 1) * pageQueryMock.limit,
-          take: pageQueryMock.limit,
+          page,
+          limit,
+          skip: (page - 1) * limit,
+          take: limit,
           total: totalSkillsMock,
-          totalPages: Math.ceil(totalSkillsMock / pageQueryMock.limit),
-          hasNext:
-            pageQueryMock.page <
-            Math.ceil(totalSkillsMock / pageQueryMock.limit),
-          hasPrev: pageQueryMock.page > 1,
+          totalPages: Math.ceil(totalSkillsMock / limit),
+          hasNext: page < Math.ceil(totalSkillsMock / limit),
+          hasPrev: page > 1,
         },
       });
     });

@@ -19,7 +19,13 @@ export type ExchangeRequest = {
   id: string;
   fromUserId: string;
   fromUserName: string;
-  toUserId?: string;
+  toUserId: string;
+  toUserName?: string;
+  offeredSkillId?: string | null;
+  offeredSkillName?: string;
+  requestedSkillId?: string | null;
+  requestedSkillName?: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'inProgress' | 'done';
   isRead: boolean;
   createdAt: string;
 };

@@ -3,7 +3,7 @@ import './styles/index.css';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ComponentType, lazy, Suspense, useEffect } from 'react';
 import { ProtectedRoute } from '@/shared/ui/protectedRoute/protectedRoute';
-import { useDispatch } from '@/services/store/store';
+import { useDispatch, useSelector } from '@/services/store/store';
 import { initializeLikes } from '@/services/slices/likeSlice';
 import { fetchCatalog } from '@/services/slices/catalogSlice';
 import { CatalogPage } from '@/pages/catalogPage/catalogPage';
@@ -11,6 +11,7 @@ import { fetchUser } from '@/services/thunk/authUser';
 import { AboutPage } from '@/pages/AboutPage/AboutPage';
 import { fetchExchanges } from '@/services/slices/exchangeSlice';
 import { getSkills } from '@/services/slices/skillsSlice';
+import { userSliceSelectors } from '@/services/slices/authSlice';
 import Loader from '@/shared/ui/Loader/loader';
 const ProfileDetailsPage = lazy(
   () =>
@@ -32,14 +33,18 @@ function App() {
   const location = useLocation();
   const backgroundLocation = location.state && location.state.background;
   const dispatch = useDispatch();
+  const authUser = useSelector(userSliceSelectors.selectUser);
 
   useEffect(() => {
     dispatch(initializeLikes());
     dispatch(fetchUser());
     dispatch(fetchCatalog());
-    dispatch(fetchExchanges());
     dispatch(getSkills());
   }, [dispatch]);
+
+  useEffect(() => {
+    void dispatch(fetchExchanges());
+  }, [dispatch, authUser?._id]);
 
   return (
     <Suspense fallback={<Loader />}>

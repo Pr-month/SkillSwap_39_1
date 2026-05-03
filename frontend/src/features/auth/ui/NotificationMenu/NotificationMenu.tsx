@@ -86,41 +86,68 @@ export const NotificationMenu = ({ isOpen }: NotificationMenuProps) => {
     // Можно использовать date-fns или Intl.DateTimeFormat
   };
 
+  const getIncomingMessage = (status?: string) => {
+    if (status === 'accepted') {
+      return 'Вы приняли этот обмен';
+    }
+
+    if (status === 'rejected') {
+      return 'Вы отклонили этот обмен';
+    }
+
+    if (status === 'inProgress') {
+      return 'Обмен уже в процессе';
+    }
+
+    return 'Предложен обмен — нажмите для ответа';
+  };
+
+  const getOutgoingMessage = (
+    status: string | undefined,
+    toUserName?: string,
+  ) => {
+    if (status === 'accepted') {
+      return `${toUserName || 'Пользователь'} принял(а) ваш обмен`;
+    }
+
+    if (status === 'rejected') {
+      return `${toUserName || 'Пользователь'} отклонил(а) ваш обмен`;
+    }
+
+    if (status === 'inProgress') {
+      return `Обмен с ${toUserName || 'пользователем'} уже в процессе`;
+    }
+
+    return `Вы предложили обмен пользователю ${toUserName || ''}`.trim();
+  };
+
   // Формируем уведомления
   const notifications = [
-    // 1. Входящие запросы (показываем ВСЕ)
     ...incoming.map(req => ({
       id: req.id,
       userName: req.fromUserName,
       type: 'incoming' as const,
       status: req.status,
       date: formatDate(req.createdAt),
-      message:
-        req.status === 'pending'
-          ? 'Предложен обмен — нажмите для ответа'
-          : `Вы ${req.status === 'accepted' ? 'приняли' : 'отклонили'} этот обмен`,
+      message: getIncomingMessage(req.status),
       isNew: !req.isRead,
     })),
 
-    // 2. Исходящие запросы (только с ответами)
-    ...outgoing
-      .filter(req => req.status === 'accepted')
-      .map(req => ({
+    ...outgoing.map(req => ({
         id: req.id,
-        userName: req.toUserName,
+        userName: req.toUserName || 'Пользователь',
         type: 'outgoing' as const,
         status: req.status,
         date: formatDate(req.createdAt),
-        message:
-          req.status === 'accepted'
-            ? `${req.toUserName} принял(а) ваш обмен`
-            : `${req.toUserName} отклонил(а) ваш обмен`,
+        message: getOutgoingMessage(req.status, req.toUserName),
         isNew: !req.isRead,
       })),
   ];
 
   // Обработчики
-  const handleReadAll = () => dispatch(markAllAsRead());
+  const handleReadAll = () => {
+    void dispatch(markAllAsRead());
+  };
   //const handleClearViewed = () => dispatch(clearViewedRequests());
 
   const newNotifications = notifications.filter(n => n.isNew);
@@ -134,10 +161,16 @@ export const NotificationMenu = ({ isOpen }: NotificationMenuProps) => {
 
   const getStatusText = (status: string, type: string) => {
     if (type === 'incoming') {
-      return status === 'accepted' ? 'принял обмен' : 'предлагает вам обмен';
-    } else {
-      return status === 'accepted' ? 'вы приняли обмен' : 'вы отклонили обмен';
+      if (status === 'accepted') return 'принял обмен';
+      if (status === 'rejected') return 'отклонил обмен';
+      if (status === 'inProgress') return 'обмен в процессе';
+      return 'предлагает вам обмен';
     }
+
+    if (status === 'accepted') return 'принял ваш обмен';
+    if (status === 'rejected') return 'отклонил ваш обмен';
+    if (status === 'inProgress') return 'обмен в процессе';
+    return 'ожидает ответа';
   };
 
   return (
@@ -171,9 +204,17 @@ export const NotificationMenu = ({ isOpen }: NotificationMenuProps) => {
             </div>
             <div className={styles.notificationActions}>
               <Link
-                to={notification.type === 'incoming' ? '/obmen' : '/profile'}
+                to={
+                  notification.type === 'incoming'
+                    ? '/profile/requests'
+                    : '/profile/exchanges'
+                }
                 className={styles.buttonNotificationMenu}
-                data-testid={notification.type === 'incoming' ? 'link-to-obmen' : 'link-to-profile'}
+                data-testid={
+                  notification.type === 'incoming'
+                    ? 'link-to-requests'
+                    : 'link-to-exchanges'
+                }
               >
                 <Button type="primary">Перейти</Button>
               </Link>
