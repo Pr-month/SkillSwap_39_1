@@ -12,7 +12,6 @@ import {
 } from '@/shared/lib/registration';
 import * as yup from 'yup';
 import styles from './ProfileForm.module.css';
-import { useAuth } from '@/features/auth/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 type ProfileGender = 'male' | 'female' | 'unknown';
@@ -82,7 +81,6 @@ const passwordSchema = yup
   .matches(STRONG_PASSWORD_REGEX, STRONG_PASSWORD_HINT);
 
 export function ProfileForm() {
-  const { login } = useAuth();
   const navigate = useNavigate();
   const dateInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
@@ -227,9 +225,6 @@ export function ProfileForm() {
           }),
         );
       }
-
-      login(updatedUser);
-
       const response = await updateProfileApi({
         name: formData.name,
         birthdate: new Date(formData.birthDate).toISOString(),

@@ -113,13 +113,11 @@ function App() {
           <Route
             path="/register/success"
             element={
-              <ProtectedRoute onlyUnAuth>
-                <SuccessModal
-                  onClose={() => {
-                    navigate('/');
-                  }}
-                />
-              </ProtectedRoute>
+              <SuccessModal
+                onClose={() => {
+                  navigate('/');
+                }}
+              />
             }
           />
           <Route

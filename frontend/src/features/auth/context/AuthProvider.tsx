@@ -1,66 +1,57 @@
 import { useState, ReactNode, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 import { AuthState, User } from '../lib/types';
+import { useDispatch, useSelector } from '@/services/store/store';
+import { userSliceSelectors } from '@/services/slices/authSlice';
+import { logoutUserApi } from '@/services/thunk/authUser';
+
+const mapReduxUserToContextUser = (
+  user: ReturnType<typeof userSliceSelectors.selectUser>,
+): User | null => {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email || '',
+    avatar: typeof user.image === 'string' ? user.image : undefined,
+    birthdayDate: user.birthdayDate,
+    city: user.city,
+    description: user.description,
+  };
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    const savedAuth = localStorage.getItem('auth');
-    const registrationData = localStorage.getItem('registrationData');
-
-    if (savedAuth) {
-      return JSON.parse(savedAuth);
-    } else if (registrationData) {
-      const data = JSON.parse(registrationData);
-      return {
-        isAuthenticated: true,
-        user: {
-          id: data.userId,
-          name: data.name,
-          email: data.email,
-          avatar: data.avatar,
-          birthdayDate: data.birthdate,
-          city: data.city,
-          description: data.about ?? data.description,
-        },
-      };
-    }
-    return { isAuthenticated: false, user: null };
+  const dispatch = useDispatch();
+  const authUser = useSelector(userSliceSelectors.selectUser);
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    user: null,
   });
 
-  const navigate = useNavigate();
-
   const login = (userData: User) => {
-    const newState: AuthState = {
+    setAuthState({
       isAuthenticated: true,
       user: userData,
-    };
-    setAuthState(newState);
-    localStorage.setItem('auth', JSON.stringify(newState));
+    });
   };
 
   const logout = () => {
-    localStorage.removeItem('auth');
+    void dispatch(logoutUserApi());
     setAuthState({ isAuthenticated: false, user: null });
-    navigate('/');
     localStorage.removeItem('registrationData');
-    localStorage.removeItem('refreshToken');
   };
 
   useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'auth') {
-        if (event.newValue) {
-          setAuthState(JSON.parse(event.newValue));
-        } else {
-          setAuthState({ isAuthenticated: false, user: null });
-        }
-      }
-    };
+    const nextUser = mapReduxUserToContextUser(authUser);
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    setAuthState({
+      isAuthenticated: Boolean(nextUser),
+      user: nextUser,
+    });
+  }, [authUser]);
 
   return (
     <AuthContext.Provider value={{ ...authState, login, logout }}>{children}</AuthContext.Provider>
